@@ -35,14 +35,14 @@ const fromTable = (table: string) => supabase.from(table as any);
 
 export const getAllUsuarios = async (): Promise<Usuario[]> => {
   try {
-    const { data, error } = await fromTable('usuarios').select('*').order('fecha_registro', { ascending: false });
+    const { data, error } = await fromTable('users').select('*').order('fecha_registro', { ascending: false });
     if (error || !data || data.length === 0) {
       console.warn('Error or no data in getAllUsuarios, checking if table is empty...');
       if (!error && data && data.length === 0) {
         console.log('Seeding usuarios table from mockData...');
         for (const u of usuariosMock) {
           const dbData = toDbUsuario(u);
-          await fromTable('usuarios').insert([dbData as any]);
+          await fromTable('users').insert([dbData as any]);
         }
         return usuariosMock;
       }
@@ -58,13 +58,13 @@ export const getAllUsuarios = async (): Promise<Usuario[]> => {
 };
 
 export const getUsuarioByCorreo = async (correo: string): Promise<Usuario | null> => {
-  const { data, error } = await fromTable('usuarios').select('*').ilike('correo', correo).single();
+  const { data, error } = await fromTable('users').select('*').ilike('correo', correo).single();
   if (error || !data) return null;
   return fromDbUsuario(data as DbRecord);
 };
 
 export const getUsuarioById = async (id: string): Promise<Usuario | null> => {
-  const { data, error } = await fromTable('usuarios').select('*').eq('id', id).single();
+  const { data, error } = await fromTable('users').select('*').eq('id', id).single();
   if (error || !data) return null;
   return fromDbUsuario(data as DbRecord);
 };
@@ -92,7 +92,7 @@ export const crearUsuario = async (usuarioData: Partial<Usuario>): Promise<Usuar
       activo: true, 
       fechaRegistro: new Date().toISOString().split('T')[0] 
     } as Usuario);
-    const { data, error } = await fromTable('usuarios').insert([dbData as any]).select().single();
+    const { data, error } = await fromTable('users').insert([dbData as any]).select().single();
     if (error) { 
       console.error('Error creating user in Supabase, using mock:', error); 
       return localResult; 
@@ -130,7 +130,7 @@ export const actualizarUsuario = async (id: string, datos: Partial<Usuario>): Pr
   }
 
   const dbData = toDbUsuarioPartial(datos);
-  const { error } = await fromTable('usuarios').update(dbData as any).eq('id', id);
+  const { error } = await fromTable('users').update(dbData as any).eq('id', id);
   if (error) { 
     console.error('Error actualizarUsuario:', error); 
     return false; 
@@ -145,7 +145,7 @@ export const eliminarUsuario = async (id: string): Promise<boolean> => {
     console.warn('Error running editarUsuarioMock:', e);
   }
 
-  const { error } = await fromTable('usuarios').update({ activo: false } as any).eq('id', id);
+  const { error } = await fromTable('users').update({ activo: false } as any).eq('id', id);
   if (error) { console.error('Error eliminarUsuario:', error); return false; }
   return true;
 };
@@ -157,7 +157,7 @@ export const activarUsuario = async (id: string): Promise<boolean> => {
     console.warn('Error running editarUsuarioMock:', e);
   }
 
-  const { error } = await fromTable('usuarios').update({ activo: true } as any).eq('id', id);
+  const { error } = await fromTable('users').update({ activo: true } as any).eq('id', id);
   if (error) { console.error('Error activarUsuario:', error); return false; }
   return true;
 };
@@ -168,7 +168,7 @@ export const eliminarUsuarioPermanente = async (id: string): Promise<boolean> =>
     usuariosMock.splice(idx, 1);
   }
 
-  const { error } = await fromTable('usuarios').delete().eq('id', id);
+  const { error } = await fromTable('users').delete().eq('id', id);
   if (error) { console.error('Error eliminarUsuarioPermanente:', error); return false; }
   return true;
 };
@@ -190,13 +190,13 @@ export const reasignarUsuario = async (id: string, asignacion: { pastorId?: stri
   if (asignacion.liderMentorId !== undefined) update.lider_mentor_id = asignacion.liderMentorId || null;
   if (asignacion.liderGapId !== undefined) update.lider_gap_id = asignacion.liderGapId || null;
   if (asignacion.gapId !== undefined) update.gap_id = asignacion.gapId || null;
-  const { error } = await fromTable('usuarios').update(update as any).eq('id', id);
+  const { error } = await fromTable('users').update(update as any).eq('id', id);
   if (error) { console.error('Error reasignarUsuario:', error); return false; }
   return true;
 };
 
 export const getUsuariosByRol = async (rol: string): Promise<Usuario[]> => {
-  const { data, error } = await fromTable('usuarios').select('*').eq('rol', rol).eq('activo', true);
+  const { data, error } = await fromTable('users').select('*').eq('rol', rol).eq('activo', true);
   if (error) return [];
   return ((data as DbRecord[]) || []).map(fromDbUsuario);
 };
@@ -318,14 +318,14 @@ export const activarGAP = async (id: string): Promise<boolean> => {
 
 export const getAllMiembros = async (): Promise<MiembroGAP[]> => {
   try {
-    const { data, error } = await fromTable('miembros_gap').select('*');
+    const { data, error } = await fromTable('miembros').select('*');
     if (error || !data || data.length === 0) {
       console.warn('Error or no data in getAllMiembros, checking if table is empty...');
       if (!error && data && data.length === 0) {
         console.log('Seeding miembros table from mockData...');
         for (const m of miembrosMock) {
           const dbData = toDbMiembro(m);
-          await fromTable('miembros_gap').insert([dbData as any]);
+          await fromTable('miembros').insert([dbData as any]);
         }
         return miembrosMock;
       }
@@ -341,7 +341,7 @@ export const getAllMiembros = async (): Promise<MiembroGAP[]> => {
 };
 
 export const getMiembrosByGAP = async (gapId: string): Promise<MiembroGAP[]> => {
-  const { data, error } = await fromTable('miembros_gap').select('*').eq('gap_id', gapId);
+  const { data, error } = await fromTable('miembros').select('*').eq('gap_id', gapId);
   if (error) return [];
   return ((data as DbRecord[]) || []).map(fromDbMiembro);
 };
@@ -360,7 +360,7 @@ export const crearMiembro = async (miembroData: Partial<MiembroGAP>): Promise<Mi
       id: localResult?.id || `m${Date.now()}`,
       fechaRegistro: new Date().toISOString().split('T')[0] 
     } as MiembroGAP);
-    const { data, error } = await fromTable('miembros_gap').insert([dbData as any]).select().single();
+    const { data, error } = await fromTable('miembros').insert([dbData as any]).select().single();
     if (error) { 
       console.error('Error creating member in Supabase, using mock:', error); 
       return localResult; 
@@ -385,7 +385,7 @@ export const actualizarMiembro = async (id: string, datos: Partial<MiembroGAP>):
   }
 
   const dbData = toDbMiembroPartial(datos);
-  const { error } = await fromTable('miembros_gap').update(dbData as any).eq('id', id);
+  const { error } = await fromTable('miembros').update(dbData as any).eq('id', id);
   if (error) { 
     console.error('Error actualizarMiembro:', error); 
     return false; 
@@ -403,7 +403,7 @@ export const eliminarMiembro = async (id: string): Promise<boolean> => {
     console.warn('Error running mock delete:', e);
   }
 
-  const { error } = await fromTable('miembros_gap').delete().eq('id', id);
+  const { error } = await fromTable('miembros').delete().eq('id', id);
   if (error) { console.error('Error eliminarMiembro:', error); return false; }
   return true;
 };
@@ -619,14 +619,14 @@ export const actualizarEscalamiento = async (id: string, datos: Partial<Escalami
 // ============================================
 
 export const getAllEventos = async (): Promise<EventoCalendario[]> => {
-  const { data, error } = await fromTable('eventos_calendario').select('*').eq('activo', true);
+  const { data, error } = await fromTable('calendar_events').select('*').eq('activo', true);
   if (error) { console.error('Error getAllEventos:', error); return []; }
   return ((data as DbRecord[]) || []).map(fromDbEvento);
 };
 
 export const crearEvento = async (eventoData: Partial<EventoCalendario>): Promise<EventoCalendario | null> => {
   const dbData = toDbEvento({ ...eventoData, fechaCreacion: new Date().toISOString().split('T')[0], activo: true } as EventoCalendario);
-  const { data, error } = await fromTable('eventos_calendario').insert([dbData as any]).select().single();
+  const { data, error } = await fromTable('calendar_events').insert([dbData as any]).select().single();
   if (error) { console.error('Error crearEvento:', error); return null; }
   return data ? fromDbEvento(data as DbRecord) : null;
 };
@@ -636,9 +636,9 @@ export const crearEvento = async (eventoData: Partial<EventoCalendario>): Promis
 // ============================================
 
 export const getEstadisticas = async () => {
-  const { count: totalUsuarios } = await fromTable('usuarios').select('*', { count: 'exact', head: true });
+  const { count: totalUsuarios } = await fromTable('users').select('*', { count: 'exact', head: true });
   const { count: totalGAPs } = await fromTable('gaps').select('*', { count: 'exact', head: true });
-  const { count: totalMiembros } = await fromTable('miembros_gap').select('*', { count: 'exact', head: true });
+  const { count: totalMiembros } = await fromTable('miembros').select('*', { count: 'exact', head: true });
   const { count: escalamientosAbiertos } = await fromTable('escalamientos').select('*', { count: 'exact', head: true }).eq('estado', 'Abierto');
   
   return {
@@ -997,20 +997,20 @@ function toDbEvento(e: EventoCalendario): DbRecord {
 // ============================================
 
 export const getAllAsistencias = async (): Promise<RegistroAsistencia[]> => {
-  const { data, error } = await fromTable('asistencias').select('*');
+  const { data, error } = await fromTable('asistencia_registros').select('*');
   if (error) { console.error('Error getAllAsistencias:', error); return []; }
   return ((data as DbRecord[]) || []).map(fromDbAsistencia);
 };
 
 export const crearAsistencia = async (asistenciaData: Partial<RegistroAsistencia>): Promise<RegistroAsistencia | null> => {
   const dbData = toDbAsistencia({ ...asistenciaData, fechaRegistro: new Date().toISOString().split('T')[0] } as RegistroAsistencia);
-  const { data, error } = await fromTable('asistencias').insert([dbData as any]).select().single();
+  const { data, error } = await fromTable('asistencia_registros').insert([dbData as any]).select().single();
   if (error) { console.error('Error crearAsistencia:', error); return null; }
   return data ? fromDbAsistencia(data as DbRecord) : null;
 };
 
 export const actualizarAsistencia = async (id: string, datos: Partial<RegistroAsistencia>): Promise<boolean> => {
-  const { error } = await fromTable('asistencias').update(toDbAsistencia(datos as RegistroAsistencia) as any).eq('id', id);
+  const { error } = await fromTable('asistencia_registros').update(toDbAsistencia(datos as RegistroAsistencia) as any).eq('id', id);
   if (error) { console.error('Error actualizarAsistencia:', error); return false; }
   return true;
 };
@@ -1043,14 +1043,14 @@ export const actualizarPeticion = async (id: string, datos: Partial<PeticionOrac
 // ============================================
 
 export const getAllMateriales = async (): Promise<MaterialEnsenanza[]> => {
-  const { data, error } = await fromTable('materiales_ensenanza').select('*').eq('activo', true);
+  const { data, error } = await fromTable('material_ensenanza').select('*').eq('activo', true);
   if (error) { console.error('Error getAllMateriales:', error); return []; }
   return ((data as DbRecord[]) || []).map(fromDbMaterial);
 };
 
 export const crearMaterial = async (materialData: Partial<MaterialEnsenanza>): Promise<MaterialEnsenanza | null> => {
   const dbData = toDbMaterial({ ...materialData, fechaSubida: new Date().toISOString().split('T')[0], activo: true } as MaterialEnsenanza);
-  const { data, error } = await fromTable('materiales_ensenanza').insert([dbData as any]).select().single();
+  const { data, error } = await fromTable('material_ensenanza').insert([dbData as any]).select().single();
   if (error) { console.error('Error crearMaterial:', error); return null; }
   return data ? fromDbMaterial(data as DbRecord) : null;
 };
