@@ -494,7 +494,9 @@ const AppContent: React.FC = () => {
         />
         <main className="pb-20">
           <ErrorBoundary>
-            {renderContenido()}
+            <div key={vistaActual} className="animate-fade-up w-full h-full">
+              {renderContenido()}
+            </div>
           </ErrorBoundary>
         </main>
         <MobileNav vistaActual={vistaActual} onNavegar={handleNavegar} />
@@ -632,7 +634,9 @@ const AppContent: React.FC = () => {
           {/* Scrollable content inside dashboard */}
           <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
             <ErrorBoundary>
-              {renderContenido()}
+              <div key={vistaActual} className="animate-fade-up w-full h-full">
+                {renderContenido()}
+              </div>
             </ErrorBoundary>
           </main>
         </div>
