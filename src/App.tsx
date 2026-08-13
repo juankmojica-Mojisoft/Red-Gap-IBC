@@ -503,9 +503,9 @@ const AppContent: React.FC = () => {
       </div>
 
       {/* Desktop Premium Layout (Zenith Corporate Light) */}
-      <div className="hidden lg:flex w-full max-w-7xl h-[90vh] bg-white/40 backdrop-blur-3xl rounded-[24px] border border-white/60 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
+      <div className="hidden lg:flex w-full max-w-7xl h-[90vh] glass-panel-light rounded-[24px] overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-72 border-r border-slate-200/60 flex flex-col justify-between p-6 bg-white/90 backdrop-blur-md z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside className="w-72 border-r border-slate-200/60 flex flex-col justify-between p-6 bg-white/70 backdrop-blur-lg z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
           <div className="space-y-8">
             {/* Logo */}
             <div className="flex items-center gap-3 px-2">
@@ -516,7 +516,7 @@ const AppContent: React.FC = () => {
                 <span className="text-white font-bold text-lg">†</span>
               </div>
               <div className="leading-tight">
-                <h1 className="font-bold text-sm text-slate-800 tracking-wide">Iglesia Bautista</h1>
+                <h1 className="font-bold text-sm text-slate-800 tracking-wide text-gradient">Iglesia Bautista</h1>
                 <p className="text-[10px] text-slate-500 font-medium">Central | G.A.P</p>
               </div>
             </div>
@@ -559,9 +559,9 @@ const AppContent: React.FC = () => {
         </aside>
 
         {/* Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/40 relative z-10">
+        <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/20 relative z-10">
           {/* Header */}
-          <header className="h-20 border-b border-slate-200/60 px-8 flex items-center justify-between bg-white/60 backdrop-blur-md sticky top-0 z-20">
+          <header className="h-20 border-b border-slate-200/60 px-8 flex items-center justify-between glass-panel-light sticky top-0 z-20">
             <div>
               <h2 className="text-sm font-bold tracking-wide text-slate-800">
                 {getVistaTitulo(vistaActual)}
