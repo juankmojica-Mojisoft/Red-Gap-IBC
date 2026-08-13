@@ -84,6 +84,7 @@ export interface Usuario {
   fechaRegistro: string;
   ultimoAcceso?: string;
   fotoPerfil?: string;
+  fechaEliminacion?: string; // Para soft-delete de 24 horas
   
   // Información personal
   tipoDocumento: TipoDocumento;
@@ -149,6 +150,7 @@ export interface GAP {
   modalidad: ModalidadReunion;
   activo: boolean;
   fechaCreacion: string;
+  fechaEliminacion?: string; // Para soft-delete de 24 horas
   
   // Información de reunión confirmada
   reunionConfirmada?: boolean;
@@ -187,6 +189,7 @@ export interface MiembroGAP {
   // Referencia al GAP
   gapId: string;
   fechaRegistro: string;
+  fechaEliminacion?: string; // Para soft-delete de 24 horas
 }
 
 export interface Zona {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { 
   ArrowLeft, 
   Users, 
-  Search, 
   Plus,
   Phone,
   MapPin,
@@ -19,6 +18,7 @@ import {
 } from 'lucide-react';
 import { miembrosMock, gapsMock, getGAPsByPastor, getGAPsByLiderMentor } from '@/data/mockData';
 import type { MiembroGAP } from '@/types';
+import { toast } from 'sonner';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,6 +52,20 @@ const ListaMiembros: React.FC<ListaMiembrosProps> = ({ onVolver, onNuevo, onEdit
   const [filtroBautizado, setFiltroBautizado] = useState<'todos' | 'bautizados' | 'no-bautizados'>('todos');
   const [miembroDetalle, setMiembroDetalle] = useState<MiembroGAP | null>(null);
 
+  // Initialize from localStorage or mock
+  const [miembrosGlobales, setMiembrosGlobales] = useState<MiembroGAP[]>(() => {
+    const saved = localStorage.getItem('miembros');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return miembrosMock;
+  });
+
+  // Save to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem('miembros', JSON.stringify(miembrosGlobales));
+  }, [miembrosGlobales]);
+
   // Obtener GAPs según el rol del usuario
   const getGAPsDisponibles = () => {
     if (usuario?.rol === 'pastor_principal') {
@@ -69,10 +83,14 @@ const ListaMiembros: React.FC<ListaMiembrosProps> = ({ onVolver, onNuevo, onEdit
 
   const gapsDisponibles = getGAPsDisponibles();
   const gapIdsDisponibles = gapsDisponibles.map(g => g.id);
+  // Add 'sin_gap' to available if admin or pastor
+  if (usuario?.rol === 'administrador' || usuario?.rol === 'pastor_principal') {
+    gapIdsDisponibles.push('sin_gap');
+  }
 
   // Filtrar miembros
   const getMiembrosFiltrados = () => {
-    let miembros = miembrosMock.filter(m => gapIdsDisponibles.includes(m.gapId));
+    let miembros = miembrosGlobales.filter(m => gapIdsDisponibles.includes(m.gapId));
     
     // Aplicar filtro de búsqueda
     if (busqueda) {
@@ -106,99 +124,112 @@ const ListaMiembros: React.FC<ListaMiembrosProps> = ({ onVolver, onNuevo, onEdit
 
   // Obtener nombre del GAP
   const getGAPNombre = (gapId: string) => {
+    if (gapId === 'sin_gap') return 'Libre (Sin GAP)';
     return gapsMock.find(g => g.id === gapId)?.codigo || 'GAP No Encontrado';
   };
 
+  const handleAsignarGAP = (miembroId: string, nuevoGapId: string) => {
+    const actualizados = miembrosGlobales.map(m => {
+      if (m.id === miembroId) {
+        const copy = { ...m, gapId: nuevoGapId };
+        if (miembroDetalle?.id === miembroId) {
+          setMiembroDetalle(copy);
+        }
+        return copy;
+      }
+      return m;
+    });
+    setMiembrosGlobales(actualizados);
+    toast?.success('Integrante asignado correctamente.');
+  };
+
   return (
-    <div className="p-6 max-w-6xl mx-auto animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+      <div className="mb-gutter flex flex-col md:flex-row md:items-center justify-between gap-sm animate-fade-up">
         <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={onVolver} className="flex items-center gap-2">
-            <ArrowLeft className="w-4 h-4" />
+          <Button variant="ghost" onClick={onVolver} className="text-on-surface-variant hover:text-primary transition-colors">
+            <ArrowLeft className="w-5 h-5 mr-2" />
             Volver
           </Button>
-          <h1 className="text-2xl font-bold text-gray-900">Integrantes</h1>
+          <div>
+            <h2 className="text-headline-xl font-headline-xl text-on-background">Gestin de Miembros</h2>
+            <p className="text-body-lg font-body-lg text-on-surface-variant mt-2">Administra y visualiza el directorio del GAP.</p>
+          </div>
         </div>
         {tienePermiso('crearMiembro') && onNuevo && (
-          <Button 
+          <button 
             onClick={onNuevo}
-            className="text-white"
-            style={{ backgroundColor: tema.primario }}
+            className="bg-primary text-on-primary px-sm py-xs rounded-lg flex items-center gap-2 shadow-md hover:bg-primary/90 transition-colors whitespace-nowrap w-fit mt-4 md:mt-0"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Nuevo Integrante
-          </Button>
+            <span className="material-symbols-outlined">person_add</span>
+            <span className="text-label-md font-label-md">Nuevo Integrante</span>
+          </button>
         )}
       </div>
 
-      {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <Card>
-          <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold" style={{ color: tema.primario }}>{miembros.length}</p>
-            <p className="text-xs text-gray-500">Total Integrantes</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold" style={{ color: tema.exito }}>{miembrosBautizados.length}</p>
-            <p className="text-xs text-gray-500">Bautizados</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold" style={{ color: tema.secundario }}>{miembrosMiembroIBC.length}</p>
-            <p className="text-xs text-gray-500">Miembros IBC</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-3 text-center">
-            <p className="text-2xl font-bold" style={{ color: tema.info }}>{miembrosNoBautizados.length}</p>
-            <p className="text-xs text-gray-500">No Bautizados</p>
-          </CardContent>
-        </Card>
+      {/* Estadisticas rapidas (Migradas a glass-panel) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-gutter mb-gutter animate-fade-up delay-100">
+        <div className="glass-panel rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-primary">{miembros.length}</p>
+          <p className="text-xs font-medium text-on-surface-variant mt-1">Total Integrantes</p>
+        </div>
+        <div className="glass-panel rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-green-600">{miembrosBautizados.length}</p>
+          <p className="text-xs font-medium text-on-surface-variant mt-1">Bautizados</p>
+        </div>
+        <div className="glass-panel rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-blue-500">{miembrosMiembroIBC.length}</p>
+          <p className="text-xs font-medium text-on-surface-variant mt-1">Miembros IBC</p>
+        </div>
+        <div className="glass-panel rounded-xl p-4 text-center">
+          <p className="text-2xl font-bold text-amber-500">{miembrosNoBautizados.length}</p>
+          <p className="text-xs font-medium text-on-surface-variant mt-1">No Bautizados</p>
+        </div>
       </div>
 
       {/* Filtros */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+      <div className="glass-panel rounded-xl p-sm mb-gutter flex flex-col md:flex-row gap-sm items-center animate-fade-up delay-200">
+        <div className="relative w-full">
+          <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant/60">search</span>
           <Input
-            placeholder="Buscar por nombre, documento o teléfono..."
+            placeholder="Buscar por nombre, documento o telefono..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="pl-10"
+            className="w-full pl-10 pr-4 py-2 bg-surface border border-outline-variant/50 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-body-md font-body-md text-on-surface placeholder:text-on-surface-variant/60"
           />
         </div>
-        <Select value={filtroGAP} onValueChange={setFiltroGAP}>
-          <SelectTrigger className="w-full sm:w-48">
-            <SelectValue placeholder="Filtrar por GAP" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="todos">Todos los GAPs</SelectItem>
-            {gapsDisponibles.map(gap => (
-              <SelectItem key={gap.id} value={gap.id}>{gap.codigo}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <div className="flex gap-2">
-          <Button
-            variant={filtroBautizado === 'todos' ? 'default' : 'outline'}
-            size="sm"
+        
+        <div className="flex gap-2 w-full md:w-auto">
+          <Select value={filtroGAP} onValueChange={setFiltroGAP}>
+            <SelectTrigger className="w-full sm:w-48 bg-surface border-outline-variant/50">
+              <SelectValue placeholder="Filtrar por GAP" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="todos">Todos los GAPs</SelectItem>
+              {(usuario?.rol === 'administrador' || usuario?.rol === 'pastor_principal') && (
+                <SelectItem value="sin_gap" className="text-amber-600 font-medium">Libres (Sin GAP)</SelectItem>
+              )}
+              {gapsDisponibles.map(gap => (
+                <SelectItem key={gap.id} value={gap.id}>{gap.codigo}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0 no-scrollbar">
+          <button
             onClick={() => setFiltroBautizado('todos')}
-            style={filtroBautizado === 'todos' ? { backgroundColor: tema.primario } : {}}
+            className={`px-4 py-1.5 rounded-full text-label-md font-label-md whitespace-nowrap transition-colors shadow-sm ${filtroBautizado === 'todos' ? 'bg-primary text-on-primary hover:bg-primary/90' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
           >
             Todos
-          </Button>
-          <Button
-            variant={filtroBautizado === 'bautizados' ? 'default' : 'outline'}
-            size="sm"
+          </button>
+          <button
             onClick={() => setFiltroBautizado('bautizados')}
-            style={filtroBautizado === 'bautizados' ? { backgroundColor: tema.exito } : {}}
+            className={`px-4 py-1.5 rounded-full text-label-md font-label-md whitespace-nowrap transition-colors shadow-sm ${filtroBautizado === 'bautizados' ? 'bg-primary text-on-primary hover:bg-primary/90' : 'bg-surface border border-outline-variant text-on-surface-variant hover:bg-surface-variant'}`}
           >
             Bautizados
-          </Button>
+          </button>
         </div>
       </div>
 
@@ -281,7 +312,11 @@ const ListaMiembros: React.FC<ListaMiembrosProps> = ({ onVolver, onNuevo, onEdit
                       </div>
 
                       <div className="mt-2 pt-2 border-t flex flex-wrap items-center gap-3 text-xs">
-                        <Badge variant="outline" style={{ borderColor: tema.primario, color: tema.primario }}>
+                        <Badge 
+                          variant="outline" 
+                          className={miembro.gapId === 'sin_gap' ? "bg-amber-50 text-amber-600 border-amber-200" : ""}
+                          style={miembro.gapId !== 'sin_gap' ? { borderColor: tema.primario, color: tema.primario } : undefined}
+                        >
                           {getGAPNombre(miembro.gapId)}
                         </Badge>
                         {miembro.escuelaFormacion !== 'No' && (
@@ -457,11 +492,35 @@ const ListaMiembros: React.FC<ListaMiembrosProps> = ({ onVolver, onNuevo, onEdit
                 </div>
 
                 <div className="border-t pt-3 border-gray-200 dark:border-white/10">
-                  <h4 className="text-xs font-bold text-gray-700 dark:text-white/80 uppercase tracking-wider mb-1">GAP Perteneciente</h4>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Church className="w-4 h-4 text-emerald-500" />
-                    <span className="font-semibold">{getGAPNombre(miembroDetalle.gapId)}</span>
-                  </div>
+                  <h4 className="text-xs font-bold text-gray-700 dark:text-white/80 uppercase tracking-wider mb-2">GAP Perteneciente</h4>
+                  {miembroDetalle.gapId === 'sin_gap' ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2 text-sm text-amber-600">
+                        <Church className="w-4 h-4" />
+                        <span className="font-semibold">Miembro Libre (Sin GAP Asignado)</span>
+                      </div>
+                      
+                      {(usuario?.rol === 'administrador' || usuario?.rol === 'pastor_principal') && (
+                        <div className="flex items-center gap-2">
+                          <Select onValueChange={(val) => handleAsignarGAP(miembroDetalle.id, val)}>
+                            <SelectTrigger className="w-full sm:w-64 border-emerald-500/30">
+                              <SelectValue placeholder="Asignar a un GAP..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {gapsDisponibles.map(g => (
+                                <SelectItem key={g.id} value={g.id}>{g.codigo}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Church className="w-4 h-4 text-emerald-500" />
+                      <span className="font-semibold">{getGAPNombre(miembroDetalle.gapId)}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

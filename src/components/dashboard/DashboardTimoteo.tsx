@@ -124,7 +124,7 @@ const DashboardTimoteo: React.FC<DashboardTimoteoProps> = ({ onNavegar }) => {
   const progresoTareas = tareas.length > 0 ? (tareasCompletadas / tareas.length) * 100 : 0;
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       {/* Header Personalizado */}
       <div 
         className="rounded-2xl p-6 text-white relative overflow-hidden"
@@ -137,10 +137,10 @@ const DashboardTimoteo: React.FC<DashboardTimoteoProps> = ({ onNavegar }) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-5 h-5 text-yellow-300" />
-              <span className="text-white/80 text-sm font-medium">Rol: Timoteo</span>
+              <span className="text-slate-500 text-sm font-medium">Rol: Timoteo</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold">¡Hola, {usuario?.nombre}!</h2>
-            <p className="text-white/80 mt-1">
+            <p className="text-slate-500 mt-1">
               {miGAP ? `${miGAP.codigo} - ${miGAP.barrio}` : 'Sin GAP Asignado'}
             </p>
             
@@ -627,3 +627,7 @@ const DashboardTimoteo: React.FC<DashboardTimoteoProps> = ({ onNavegar }) => {
 };
 
 export default DashboardTimoteo;
+
+
+
+

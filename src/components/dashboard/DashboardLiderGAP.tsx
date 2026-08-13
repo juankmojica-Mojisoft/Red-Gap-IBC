@@ -77,7 +77,7 @@ const DashboardLiderGAP: React.FC<DashboardLiderGAPProps> = ({ onNavegar }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       {/* Header Personalizado */}
       <div 
         className="rounded-2xl p-6 text-white relative overflow-hidden"
@@ -90,10 +90,10 @@ const DashboardLiderGAP: React.FC<DashboardLiderGAPProps> = ({ onNavegar }) => {
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Sparkles className="w-5 h-5 text-yellow-300" />
-              <span className="text-white/80 text-sm font-medium">Rol: Líder GAP</span>
+              <span className="text-slate-500 text-sm font-medium">Rol: Líder GAP</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold">¡Bienvenido, {usuario?.nombre}!</h2>
-            <p className="text-white/80 mt-1">
+            <p className="text-slate-500 mt-1">
               {miGAP ? `${miGAP.codigo} - ${miGAP.barrio}` : 'Sin GAP Asignado'}
             </p>
             
@@ -565,3 +565,7 @@ const DashboardLiderGAP: React.FC<DashboardLiderGAPProps> = ({ onNavegar }) => {
 };
 
 export default DashboardLiderGAP;
+
+
+
+

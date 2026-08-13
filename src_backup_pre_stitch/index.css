@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Paleta de Colores GAP - Zenith Corporate Azul y Blanco */
+    --color-primario: #366df5; /* Zenith Royal Blue */
+    --color-secundario: #eef1f9; /* Zenith Ice Blue */
+    --color-fondo: #faf8ff; /* Zenith Surface */
+    --color-texto: #191b24; /* Zenith On-Surface */
+    --color-texto-secundario: #434655; /* Zenith On-Surface Variant */
+    --color-exito: #16a34a; /* Green 600 */
+    --color-advertencia: #c04d00; /* Zenith Tertiary Burnt Orange */
+    --color-error: #ba1a1a; /* Zenith Error */
+    --color-info: #366df5; /* Zenith Royal Blue */
+    
+    /* Variables shadcn/ui - Forzando un modo claro limpio y corporativo Zenith */
+    --background: 257 100% 99%; /* #faf8ff */
+    --foreground: 228 18% 12%; /* #191b24 */
+    --card: 0 0% 100%; /* #ffffff */
+    --card-foreground: 228 18% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 228 18% 12%;
+    --primary: 222 90% 59%; /* #366df5 */
+    --primary-foreground: 0 0% 100%; /* blanco */
+    --secondary: 223 44% 95%; /* #eef1f9 */
+    --secondary-foreground: 222 90% 59%; /* #366df5 */
+    --muted: 210 40% 96.1%; /* #f1f5f9 */
+    --muted-foreground: 215.4 16.3% 46.9%; /* #64748b */
+    --accent: 204 100% 95%; /* #e0f2fe */
+    --accent-foreground: 224 76% 48%; /* #1d4ed8 */
+    --destructive: 0 84.2% 60.2%; /* #ef4444 */
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 31.8% 91.4%; /* #e2e8f0 */
+    --input: 214.3 31.8% 91.4%; /* #e2e8f0 */
+    --ring: 224 76% 48%; /* #1d4ed8 */
+    --radius: 0.75rem; /* Bordes un poco más redondeados para modernidad */
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-color: var(--color-fondo);
+    color: var(--color-texto);
+  }
+}
+
+@layer components {
+  /* ========================================================
+     NUEVOS ESTILOS CORPORATIVOS
+     ======================================================== */
+
+  /* Tarjetas y Contenedores */
+  .corporativo-card {
+    @apply bg-white rounded-xl border border-slate-200 shadow-sm transition-all duration-300;
+  }
+  .corporativo-card:hover {
+    @apply shadow-md border-slate-300;
+  }
+
+  /* Botones principales con gradiente sutil profesional */
+  .gradient-button {
+    background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+    @apply text-white font-medium rounded-lg shadow-sm hover:shadow transition-all duration-200;
+  }
+  .gradient-button:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+  }
+
+  /* Tarjetas de estadísticas estilo Apple/Profesional */
+  .stat-card {
+    @apply bg-white rounded-xl p-5 border border-slate-100 shadow-[0_2px_10px_-3px_rgba(6,81,237,0.1)] transition-all duration-300 hover:shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden;
+  }
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background-color: var(--color-primario);
+    border-radius: 4px 0 0 4px;
+  }
+  .stat-card-success::before { background-color: var(--color-exito); }
+  .stat-card-warning::before { background-color: var(--color-advertencia); }
+  .stat-card-error::before { background-color: var(--color-error); }
+
+  /* Iconos con fondo suave */
+  .icon-bg {
+    @apply bg-blue-50 text-blue-600 rounded-full flex items-center justify-center;
+  }
+  .icon-bg-success {
+    @apply bg-green-50 text-green-600 rounded-full flex items-center justify-center;
+  }
+  .icon-bg-warning {
+    @apply bg-amber-50 text-amber-600 rounded-full flex items-center justify-center;
+  }
+  .icon-bg-error {
+    @apply bg-red-50 text-red-600 rounded-full flex items-center justify-center;
+  }
+
+  /* Animaciones suaves */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out forwards;
+  }
+
+  @keyframes pulse-soft {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.05); opacity: 0.9; }
+  }
+  .animate-pulse-badge {
+    animation: pulse-soft 2s infinite;
+  }
+
+  /* Scrollbar elegante */
+  .custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+  }
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+  }
+
+  /* Menú móvil inferior */
+  .mobile-menu {
+    @apply fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mobile-menu-item {
+    @apply flex flex-col items-center justify-center py-2 px-3 text-xs font-medium transition-colors text-slate-500;
+  }
+  .mobile-menu-item.active {
+    @apply text-blue-700 font-semibold;
+  }
+  .mobile-menu-item:hover {
+    @apply text-blue-600;
+  }
+
+  /* Prioridades y Estados (limpios y profesionales) */
+  .prioridad-normal { @apply bg-slate-100 text-slate-700 border-none font-medium; }
+  .prioridad-importante { @apply bg-amber-50 text-amber-700 border-none font-medium; }
+  .prioridad-urgente { @apply bg-red-50 text-red-700 border-none font-medium; }
+
+  .estado-abierto { @apply bg-blue-50 text-blue-700 border-none font-medium; }
+  .estado-tratamiento { @apply bg-purple-50 text-purple-700 border-none font-medium; }
+  .estado-cerrado { @apply bg-green-50 text-green-700 border-none font-medium; }
+  .estado-escalado { @apply bg-orange-50 text-orange-700 border-none font-medium; }
+
+  /* Badges de roles organizados */
+  .rol-pastor { @apply bg-blue-100 text-blue-800 font-medium; }
+  .rol-admin { @apply bg-slate-800 text-white font-medium; }
+  .rol-mentor { @apply bg-indigo-50 text-indigo-700 font-medium; }
+  .rol-lider-mentor { @apply bg-sky-50 text-sky-700 font-medium; }
+  .rol-lider-gap { @apply bg-teal-50 text-teal-700 font-medium; }
+  .rol-timoteo { @apply bg-emerald-50 text-emerald-700 font-medium; }
+  .rol-monitor { @apply bg-violet-50 text-violet-700 font-medium; }
+}
+
+@layer utilities {
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  /* Zenith Corporate Glassmorphism */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+    border-radius: 24px;
+  }
+}

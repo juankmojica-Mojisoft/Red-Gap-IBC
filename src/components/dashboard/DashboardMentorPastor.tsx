@@ -190,7 +190,7 @@ const DashboardMentorPastor: React.FC<DashboardMentorPastorProps> = ({ onNavegar
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       {/* Header con notificaciones */}
       <div 
         className="rounded-2xl p-6 text-white relative overflow-hidden"
@@ -201,9 +201,9 @@ const DashboardMentorPastor: React.FC<DashboardMentorPastorProps> = ({ onNavegar
         
         <div className="relative z-10 flex items-start justify-between">
           <div>
-            <p className="text-white/80 text-sm mb-1">Pastor - Sistema GAP</p>
+            <p className="text-slate-500 text-sm mb-1">Pastor - Sistema GAP</p>
             <h2 className="text-2xl sm:text-3xl font-bold">¡Bienvenido, {usuario?.nombre}!</h2>
-            <p className="text-white/80 mt-2">
+            <p className="text-slate-500 mt-2">
               {misGAPs.length} GAPs • {totalMiembros} integrantes
             </p>
           </div>
@@ -889,3 +889,7 @@ const DashboardMentorPastor: React.FC<DashboardMentorPastorProps> = ({ onNavegar
 };
 
 export default DashboardMentorPastor;
+
+
+
+

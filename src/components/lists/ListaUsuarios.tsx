@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -29,6 +29,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 interface ListaUsuariosProps {
   onVolver: () => void;
@@ -61,10 +72,25 @@ const ListaUsuarios: React.FC<ListaUsuariosProps> = ({ onVolver, onNuevo, onVerU
   const [busqueda, setBusqueda] = useState('');
   const [filtroRol, setFiltroRol] = useState<RolUsuario | 'todos'>('todos');
   const [filtroEstado, setFiltroEstado] = useState<'todos' | 'activos' | 'inactivos'>('todos');
+  const [usuarioAEliminar, setUsuarioAEliminar] = useState<string | null>(null);
+
+  // Initialize from localStorage or mock
+  const [usuariosGlobales, setUsuariosGlobales] = useState<Usuario[]>(() => {
+    const saved = localStorage.getItem('usuarios');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return usuariosMock;
+  });
+
+  // Save to localStorage when changed
+  useEffect(() => {
+    localStorage.setItem('usuarios', JSON.stringify(usuariosGlobales));
+  }, [usuariosGlobales]);
 
   // Filtrar usuarios según el rol del usuario logueado
   const getUsuariosFiltrados = () => {
-    let usuarios = usuariosMock;
+    let usuarios = usuariosGlobales;
     
     if (usuario?.rol === 'pastor') {
       // Pastor ve: él mismo, sus líderes mentores, sus líderes GAP, sus timoteos
@@ -72,7 +98,7 @@ const ListaUsuarios: React.FC<ListaUsuariosProps> = ({ onVolver, onNuevo, onVerU
       usuarios = usuarios.filter(u => 
         u.id === pastorId || 
         u.pastorId === pastorId ||
-        (u.liderMentorId && usuariosMock.find(us => us.id === u.liderMentorId)?.pastorId === pastorId)
+        (u.liderMentorId && usuariosGlobales.find(us => us.id === u.liderMentorId)?.pastorId === pastorId)
       );
     } else if (usuario?.rol === 'lider_mentor') {
       // Líder Mentor ve: él mismo, sus líderes GAP, sus timoteos
@@ -122,8 +148,22 @@ const ListaUsuarios: React.FC<ListaUsuariosProps> = ({ onVolver, onNuevo, onVerU
   // Contar por roles
   const contarPorRol = (rol: RolUsuario) => usuarios.filter(u => u.rol === rol).length;
 
+  const handleEliminarDefinitivamente = () => {
+    if (!usuarioAEliminar) return;
+
+    // Actualizar lista global
+    const actualizados = usuariosGlobales.filter(u => u.id !== usuarioAEliminar);
+    setUsuariosGlobales(actualizados);
+    
+    // Si era lider/pastor, también deberíamos liberar a sus miembros o gaps...
+    // (Por ahora sólo lo borramos del listado de usuarios para no romper la app)
+    
+    setUsuarioAEliminar(null);
+    toast?.success('Usuario eliminado definitivamente del sistema.');
+  };
+
   return (
-    <div className="p-6 max-w-6xl mx-auto animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div className="flex items-center gap-4">
@@ -292,12 +332,12 @@ const ListaUsuarios: React.FC<ListaUsuariosProps> = ({ onVolver, onNuevo, onVerU
                         <div className="mt-2 pt-2 border-t text-xs text-gray-500">
                           {u.pastorId && (
                             <span className="mr-4">
-                              Pastor: {usuariosMock.find(us => us.id === u.pastorId)?.nombre || 'N/A'}
+                              Pastor: {usuariosGlobales.find(us => us.id === u.pastorId)?.nombre || 'N/A'}
                             </span>
                           )}
                           {u.liderMentorId && (
                             <span>
-                              Líder Mentor: {usuariosMock.find(us => us.id === u.liderMentorId)?.nombre || 'N/A'}
+                              Líder Mentor: {usuariosGlobales.find(us => us.id === u.liderMentorId)?.nombre || 'N/A'}
                             </span>
                           )}
                         </div>
@@ -320,6 +360,14 @@ const ListaUsuarios: React.FC<ListaUsuariosProps> = ({ onVolver, onNuevo, onVerU
                           Editar usuario
                         </DropdownMenuItem>
                       )}
+                      {(usuario?.rol === 'administrador' || usuario?.rol === 'pastor_principal') && (
+                        <DropdownMenuItem 
+                          className="text-red-600 focus:text-red-700 focus:bg-red-50"
+                          onClick={(e) => { e.stopPropagation(); setUsuarioAEliminar(u.id); }}
+                        >
+                          Eliminar Usuario
+                        </DropdownMenuItem>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
@@ -328,8 +376,39 @@ const ListaUsuarios: React.FC<ListaUsuariosProps> = ({ onVolver, onNuevo, onVerU
           ))
         )}
       </div>
+
+      {/* Confirmación para Eliminar Usuario */}
+      <AlertDialog open={!!usuarioAEliminar} onOpenChange={(open) => !open && setUsuarioAEliminar(null)}>
+        <AlertDialogContent className="bg-white border border-red-100">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-red-600 flex items-center gap-2">
+              <span className="material-symbols-outlined">warning</span> 
+              Peligro: Acción Irreversible
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-700 text-base">
+              Estás a punto de <strong>eliminar definitivamente</strong> a este usuario del sistema.
+              <br /><br />
+              Esta acción <strong>no se puede deshacer</strong> y cualquier registro que dependa de este usuario (como mentorías o liderazgos de GAP) quedará huérfano o desvinculado.
+              <br /><br />
+              ¿Estás seguro de continuar con la eliminación definitiva?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-gray-100 hover:bg-gray-200 border-none text-gray-700">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleEliminarDefinitivamente}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold"
+            >
+              Sí, eliminar definitivamente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
 
 export default ListaUsuarios;
+

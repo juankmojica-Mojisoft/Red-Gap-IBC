@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,17 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 
 import { 
   BookOpen, 
@@ -133,7 +144,21 @@ const categorias = [
 
 const EnsenanzaPastorModule: React.FC = () => {
   const { usuario, tema } = useAuth();
-  const [materiales, setMateriales] = useState<MaterialEnsenanza[]>(materialesMock);
+  const [materiales, setMateriales] = useState<MaterialEnsenanza[]>(() => {
+    const saved = localStorage.getItem('materiales');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing materiales from localStorage', e);
+      }
+    }
+    return materialesMock;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('materiales', JSON.stringify(materiales));
+  }, [materiales]);
   const [busqueda, setBusqueda] = useState('');
   const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('Todas');
   const [dialogoSubirAbierto, setDialogoSubirAbierto] = useState(false);
@@ -146,6 +171,8 @@ const EnsenanzaPastorModule: React.FC = () => {
     categoria: 'Enseñanza General',
     paraRoles: ['todos'],
   });
+
+  const [materialAEliminar, setMaterialAEliminar] = useState<string | null>(null);
 
   // Filtrar materiales
   const materialesFiltrados = materiales.filter(m => {
@@ -223,18 +250,16 @@ const EnsenanzaPastorModule: React.FC = () => {
     if (!archivoSeleccionado || !nuevoMaterial.titulo.trim()) return;
 
     const nuevo: MaterialEnsenanza = {
-      id: `mat${Date.now()}`,
-      titulo: nuevoMaterial.titulo,
-      descripcion: nuevoMaterial.descripcion,
+      id: Date.now().toString(),
+      ...nuevoMaterial,
       tipo: detectarTipo(archivoSeleccionado.name),
-      categoria: nuevoMaterial.categoria,
       archivoNombre: archivoSeleccionado.name,
-      archivoSize: formatFileSize(archivoSeleccionado.size),
+      archivoSize: `${(archivoSeleccionado.size / (1024 * 1024)).toFixed(2)} MB`,
       subidoPor: usuario?.id || '',
-      subidoPorNombre: usuario?.nombre || 'Pastor',
-      fechaSubida: new Date().toISOString().split('T')[0],
-      paraRoles: nuevoMaterial.paraRoles,
+      subidoPorNombre: `${usuario?.nombre} ${usuario?.apellidos || ''}`,
+      fechaSubida: new Date().toISOString(),
       descargas: 0,
+      url: URL.createObjectURL(archivoSeleccionado),
     };
 
     setMateriales([nuevo, ...materiales]);
@@ -246,11 +271,18 @@ const EnsenanzaPastorModule: React.FC = () => {
       categoria: 'Enseñanza General',
       paraRoles: ['todos'],
     });
+    toast.success('Material publicado exitosamente');
   };
 
   const eliminarMaterial = (id: string) => {
-    if (confirm('¿Está seguro de eliminar este material?')) {
-      setMateriales(materiales.filter(m => m.id !== id));
+    setMaterialAEliminar(id);
+  };
+
+  const confirmarEliminacion = () => {
+    if (materialAEliminar) {
+      setMateriales(materiales.filter(m => m.id !== materialAEliminar));
+      toast.success('El material ha sido eliminado de forma definitiva del sistema.');
+      setMaterialAEliminar(null);
     }
   };
 
@@ -258,8 +290,7 @@ const EnsenanzaPastorModule: React.FC = () => {
     setMateriales(materiales.map(m => 
       m.id === id ? { ...m, descargas: m.descargas + 1 } : m
     ));
-    // Aquí iría la lógica real de descarga
-    alert('Descargando archivo...');
+    toast.success('Iniciando descarga del material...');
   };
 
   return (
@@ -422,7 +453,7 @@ const EnsenanzaPastorModule: React.FC = () => {
                     <Download className="w-4 h-4 mr-1" />
                     Descargar
                   </Button>
-                  {material.subidoPor === usuario?.id && (
+                  {(material.subidoPor === usuario?.id || usuario?.rol === 'pastor_principal') && (
                     <Button 
                       size="sm"
                       variant="outline"
@@ -570,6 +601,27 @@ const EnsenanzaPastorModule: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Diálogo de Confirmación de Eliminación */}
+      <AlertDialog open={!!materialAEliminar} onOpenChange={(open) => !open && setMaterialAEliminar(null)}>
+        <AlertDialogContent className="glass-card border border-slate-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-800">¿Eliminar este archivo definitivamente?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-500">
+              Esta acción no se puede deshacer. Esto borrará de manera permanente el archivo del sistema y ya no estará disponible para ningún usuario.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-slate-200 text-slate-600 hover:bg-slate-100">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmarEliminacion}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Sí, eliminar definitivamente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

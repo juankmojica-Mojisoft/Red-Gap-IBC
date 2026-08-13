@@ -117,7 +117,7 @@ const DashboardLiderMentor: React.FC<DashboardLiderMentorProps> = ({ onNavegar }
   console.log('Progreso asistencia:', progresoAsistencia); // Usar la variable
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       {/* Header Personalizado */}
       <div 
         className="rounded-2xl p-6 text-white relative overflow-hidden"
@@ -130,10 +130,10 @@ const DashboardLiderMentor: React.FC<DashboardLiderMentorProps> = ({ onNavegar }
           <div>
             <div className="flex items-center gap-2 mb-2">
               <Crown className="w-5 h-5 text-yellow-300" />
-              <span className="text-white/80 text-sm font-medium">Rol: Líder Mentor</span>
+              <span className="text-slate-500 text-sm font-medium">Rol: Líder Mentor</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold">¡Bienvenido, {usuario?.nombre}!</h2>
-            <p className="text-white/80 mt-1">
+            <p className="text-slate-500 mt-1">
               Supervisando {misGAPs.length} GAP{misGAPs.length !== 1 ? 's' : ''} • {misLideres.length} Líder{misLideres.length !== 1 ? 'es' : ''} • {misTimoteos.length} Timoteo{misTimoteos.length !== 1 ? 's' : ''}
             </p>
             
@@ -615,3 +615,7 @@ const DashboardLiderMentor: React.FC<DashboardLiderMentorProps> = ({ onNavegar }
 };
 
 export default DashboardLiderMentor;
+
+
+
+

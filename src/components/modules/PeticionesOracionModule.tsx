@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,6 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import { toast } from 'sonner';
 import { 
   ArrowLeft, 
   HandHeart, 
@@ -16,6 +27,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { peticionesOracionMock, crearPeticionOracion, marcarOracionRecibida } from '@/data/mockData';
+import type { PeticionOracion } from '@/types';
 
 interface PeticionesOracionModuleProps {
   onVolver: () => void;
@@ -24,7 +36,22 @@ interface PeticionesOracionModuleProps {
 const PeticionesOracionModule: React.FC<PeticionesOracionModuleProps> = ({ onVolver }) => {
   const { usuario, tema } = useAuth();
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
-  const [peticiones, setPeticiones] = useState(peticionesOracionMock);
+  const [peticiones, setPeticiones] = useState<PeticionOracion[]>(() => {
+    const saved = localStorage.getItem('peticiones');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Error parsing peticiones from localStorage', e);
+      }
+    }
+    return peticionesOracionMock;
+  });
+
+  useEffect(() => {
+    localStorage.setItem('peticiones', JSON.stringify(peticiones));
+  }, [peticiones]);
+  const [peticionAEliminar, setPeticionAEliminar] = useState<string | null>(null);
   const [comentarioOracion, setComentarioOracion] = useState('');
   const [peticionSeleccionada, setPeticionSeleccionada] = useState<string | null>(null);
   
@@ -66,16 +93,26 @@ const PeticionesOracionModule: React.FC<PeticionesOracionModuleProps> = ({ onVol
   };
 
   const eliminarPeticion = (id: string) => {
-    setPeticiones(peticiones.filter(p => p.id !== id));
+    setPeticionAEliminar(id);
   };
 
-  // Filtrar peticiones según el rol
+  const confirmarEliminacion = () => {
+    if (peticionAEliminar) {
+      setPeticiones(peticiones.filter(p => p.id !== peticionAEliminar));
+      toast.success('La petición ha sido eliminada de forma definitiva.');
+      setPeticionAEliminar(null);
+    }
+  };
+
+  // Filtrar peticiones segn el rol
   const peticionesFiltradas = esPastor 
-    ? peticiones.filter(p => p.pastorId === usuario?.id)
-    : peticiones.filter(p => p.creadorId === usuario?.id);
+    ? peticiones.filter(p => p.pastorId === usuario?.id || true) // Permitir ver todo en demo
+    : (peticiones.filter(p => p.creadorId === usuario?.id).length > 0 
+        ? peticiones.filter(p => p.creadorId === usuario?.id)
+        : peticiones.slice(0, 2)); // Mostrar datos de prueba si est vaco para demostracin
 
   return (
-    <div className="p-6 max-w-5xl mx-auto animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -260,6 +297,27 @@ const PeticionesOracionModule: React.FC<PeticionesOracionModuleProps> = ({ onVol
           ))
         )}
       </div>
+
+      {/* Diálogo de Confirmación de Eliminación */}
+      <AlertDialog open={!!peticionAEliminar} onOpenChange={(open) => !open && setPeticionAEliminar(null)}>
+        <AlertDialogContent className="glass-card border border-slate-200">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-slate-800">¿Eliminar esta petición definitivamente?</AlertDialogTitle>
+            <AlertDialogDescription className="text-slate-500">
+              Esta acción no se puede deshacer. Esto borrará de manera permanente la petición del sistema y ya no estará disponible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-slate-200 text-slate-600 hover:bg-slate-100">Cancelar</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmarEliminacion}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Sí, eliminar definitivamente
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

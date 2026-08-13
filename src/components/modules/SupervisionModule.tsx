@@ -169,7 +169,7 @@ const SupervisionModule: React.FC<SupervisionModuleProps> = ({ onVolver }) => {
   };
 
   return (
-    <div className="p-4 sm:p-6 space-y-6 animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       {/* Header */}
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={onVolver} className="flex items-center gap-2">
@@ -530,3 +530,4 @@ const SupervisionModule: React.FC<SupervisionModuleProps> = ({ onVolver }) => {
 };
 
 export default SupervisionModule;
+

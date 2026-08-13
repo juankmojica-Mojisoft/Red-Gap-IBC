@@ -50,7 +50,8 @@ import {
   BarChart3, 
   Settings,
   Bell,
-  MessageSquare
+  MessageSquare,
+  BookOpen
 } from 'lucide-react';
 
 type Vista = 
@@ -444,15 +445,30 @@ const AppContent: React.FC = () => {
     return <LoginPage onLoginSuccess={handleLoginSuccess} />;
   }
 
-  const sidebarItems = [
-    { id: 'dashboard', label: 'Panel Principal', icon: Home },
-    { id: 'miembros', label: 'Miembros', icon: Users },
-    { id: 'gaps', label: 'Grupos G.A.P', icon: MapPin },
-    { id: 'calendario', label: 'Eventos', icon: Calendar },
-    { id: 'peticiones-oracion', label: 'Oración', icon: Heart },
-    { id: 'reportes', label: 'Reportes', icon: BarChart3 },
-    { id: 'configuracion', label: 'Ajustes', icon: Settings },
-  ];
+  const getSidebarItems = () => {
+    const baseItems = [
+      { id: 'dashboard', label: 'Panel Principal', icon: Home },
+      { id: 'miembros', label: 'Miembros', icon: Users },
+      { id: 'gaps', label: 'Grupos G.A.P', icon: MapPin },
+      { id: 'calendario', label: 'Eventos', icon: Calendar },
+    ];
+
+    if (usuario?.rol === 'pastor' || usuario?.rol === 'pastor_principal') {
+      baseItems.push({ id: 'ensenanza-pastor', label: 'Material', icon: BookOpen });
+    } else {
+      baseItems.push({ id: 'ensenanza', label: 'Material', icon: BookOpen });
+    }
+
+    baseItems.push(
+      { id: 'peticiones-oracion', label: 'Oración', icon: Heart },
+      { id: 'reportes', label: 'Reportes', icon: BarChart3 },
+      { id: 'configuracion', label: 'Ajustes', icon: Settings }
+    );
+
+    return baseItems;
+  };
+
+  const sidebarItems = getSidebarItems();
 
   const getVistaTitulo = (vista: string) => {
     switch (vista) {
@@ -468,14 +484,13 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen premium-bg lg:flex lg:items-center lg:justify-center lg:p-8 notranslate" translate="no">
+    <div className="min-h-screen bg-[var(--color-fondo)] text-[var(--color-texto)] lg:flex lg:items-center lg:justify-center lg:p-8 notranslate" translate="no">
       {/* Mobile Layout */}
-      <div className="lg:hidden w-full min-h-screen bg-transparent text-white">
+      <div className="lg:hidden w-full min-h-screen bg-transparent">
         <Header 
           onVolverInicio={handleVolverInicio}
           onConfiguracion={handleConfiguracion}
           onNotificaciones={handleNotificaciones}
-          onMensajes={() => handleNavegar('mensajes')}
         />
         <main className="pb-20">
           <ErrorBoundary>
@@ -485,10 +500,10 @@ const AppContent: React.FC = () => {
         <MobileNav vistaActual={vistaActual} onNavegar={handleNavegar} />
       </div>
 
-      {/* Desktop Premium Layout (Glassmorphism) */}
-      <div className="hidden lg:flex w-full max-w-7xl h-[90vh] glass-dashboard-panel rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+      {/* Desktop Premium Layout (Zenith Corporate Light) */}
+      <div className="hidden lg:flex w-full max-w-7xl h-[90vh] bg-white/40 backdrop-blur-3xl rounded-[24px] border border-white/60 overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.04)]">
         {/* Sidebar */}
-        <aside className="w-72 border-r border-white/5 flex flex-col justify-between p-6 bg-[#0c1612]/60 backdrop-blur-md">
+        <aside className="w-72 border-r border-slate-200/60 flex flex-col justify-between p-6 bg-white/90 backdrop-blur-md z-20 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
           <div className="space-y-8">
             {/* Logo */}
             <div className="flex items-center gap-3 px-2">
@@ -499,8 +514,8 @@ const AppContent: React.FC = () => {
                 <span className="text-white font-bold text-lg">†</span>
               </div>
               <div className="leading-tight">
-                <h1 className="font-bold text-sm text-white tracking-wide">Iglesia Bautista</h1>
-                <p className="text-[10px] text-white/50">Central | G.A.P</p>
+                <h1 className="font-bold text-sm text-slate-800 tracking-wide">Iglesia Bautista</h1>
+                <p className="text-[10px] text-slate-500 font-medium">Central | G.A.P</p>
               </div>
             </div>
 
@@ -516,12 +531,12 @@ const AppContent: React.FC = () => {
                     onClick={() => handleNavegar(item.id)}
                     className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold transition-all duration-200 ${
                       isActive 
-                        ? 'text-white shadow-lg' 
-                        : 'text-white/60 hover:text-white hover:bg-white/5'
+                        ? 'text-white shadow-md' 
+                        : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
                     }`}
                     style={isActive ? { background: 'linear-gradient(135deg, var(--color-primario) 0%, var(--color-secundario) 100%)' } : {}}
                   >
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-white/40'}`} />
+                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400 group-hover:text-slate-600'}`} />
                     {item.label}
                   </button>
                 );
@@ -530,10 +545,10 @@ const AppContent: React.FC = () => {
           </div>
 
           {/* User Profile at bottom or logout */}
-          <div className="pt-4 border-t border-white/5">
+          <div className="pt-4 border-t border-slate-100">
             <button
               onClick={logout}
-              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-all duration-200"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-semibold text-rose-500 hover:bg-rose-50 hover:text-rose-600 transition-all duration-200"
             >
               <span className="text-base font-bold">←</span>
               Cerrar Sesión
@@ -542,11 +557,11 @@ const AppContent: React.FC = () => {
         </aside>
 
         {/* Content Area */}
-        <div className="flex-1 flex flex-col overflow-hidden bg-[#0a1612]/30 backdrop-blur-sm">
+        <div className="flex-1 flex flex-col overflow-hidden bg-slate-50/40 relative z-10">
           {/* Header */}
-          <header className="h-20 border-b border-white/5 px-8 flex items-center justify-between bg-[#0c1612]/30">
+          <header className="h-20 border-b border-slate-200/60 px-8 flex items-center justify-between bg-white/60 backdrop-blur-md sticky top-0 z-20">
             <div>
-              <h2 className="text-sm font-semibold tracking-wide text-white/80">
+              <h2 className="text-sm font-bold tracking-wide text-slate-800">
                 {getVistaTitulo(vistaActual)}
               </h2>
             </div>
@@ -554,18 +569,18 @@ const AppContent: React.FC = () => {
             <div className="flex items-center gap-6">
               {/* Search Bar */}
               <div className="relative">
-                <span className="absolute left-3 top-2.5 text-white/30 text-xs">🔍</span>
+                <span className="absolute left-3 top-2.5 text-slate-400 text-xs">🔍</span>
                 <input 
                   type="text" 
-                  placeholder="Search" 
-                  className="bg-white/5 hover:bg-white/10 focus:bg-white/10 border border-white/10 text-white placeholder-white/40 text-xs rounded-xl pl-8 pr-4 py-1.5 w-48 transition-all focus:outline-none focus:border-white/20"
+                  placeholder="Buscar..." 
+                  className="bg-white hover:bg-slate-50 focus:bg-white border border-slate-200 text-slate-800 placeholder-slate-400 text-xs rounded-xl pl-8 pr-4 py-1.5 w-48 shadow-sm transition-all focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 />
               </div>
 
               {/* Centro de Mensajes */}
               <button
                 onClick={() => handleNavegar('mensajes')}
-                className="relative text-white/70 hover:text-white hover:scale-105 transition-all p-1.5 rounded-xl hover:bg-white/5"
+                className="relative text-slate-500 hover:text-slate-800 hover:scale-105 transition-all p-1.5 rounded-xl hover:bg-slate-100"
                 title="Centro de Mensajes"
               >
                 <MessageSquare className="w-5 h-5" />
@@ -574,7 +589,7 @@ const AppContent: React.FC = () => {
               {/* Notification Bell */}
               <button
                 onClick={handleNotificaciones}
-                className="relative text-white/70 hover:text-white hover:scale-105 transition-all p-1.5 rounded-xl hover:bg-white/5"
+                className="relative text-slate-500 hover:text-slate-800 hover:scale-105 transition-all p-1.5 rounded-xl hover:bg-slate-100"
                 title="Notificaciones"
               >
                 <Bell className="w-5 h-5" />
@@ -587,10 +602,10 @@ const AppContent: React.FC = () => {
 
               {/* Profile Card */}
               <div 
-                className="flex items-center gap-3 pl-4 border-l border-white/10 cursor-pointer"
+                className="flex items-center gap-3 pl-4 border-l border-slate-200 cursor-pointer"
                 onClick={() => handleNavegar('configuracion')}
               >
-                <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white font-bold text-xs shadow-md overflow-hidden">
+                <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs shadow-sm overflow-hidden">
                   {usuario?.fotoPerfil ? (
                     <img src={usuario.fotoPerfil} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
@@ -598,10 +613,10 @@ const AppContent: React.FC = () => {
                   )}
                 </div>
                 <div className="text-left hidden xl:block">
-                  <h4 className="text-xs font-bold text-white leading-none">
+                  <h4 className="text-xs font-bold text-slate-800 leading-none">
                     {usuario?.nombre} {usuario?.apellidos}
                   </h4>
-                  <p className="text-[9px] text-white/40 font-medium mt-0.5">
+                  <p className="text-[9px] text-slate-500 font-medium mt-0.5">
                     {usuario?.rol === 'pastor_principal' ? 'Pastor Principal' :
                      usuario?.rol === 'administrador' ? 'Administrador' :
                      usuario?.rol === 'pastor' ? 'Pastor' :

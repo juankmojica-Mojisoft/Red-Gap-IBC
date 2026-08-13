@@ -25,7 +25,7 @@ interface MobileNavProps {
 }
 
 const MobileNav: React.FC<MobileNavProps> = ({ vistaActual, onNavegar }) => {
-  const { usuario, tienePermiso, tema } = useAuth();
+  const { usuario, tienePermiso } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
 
   if (!usuario) return null;
@@ -35,6 +35,7 @@ const MobileNav: React.FC<MobileNavProps> = ({ vistaActual, onNavegar }) => {
   const esLider = usuario?.rol === 'lider_gap';
   const esLiderMentor = usuario?.rol === 'lider_mentor';
   const esPastor = usuario?.rol === 'pastor';
+  const esPastorPrincipal = usuario?.rol === 'pastor_principal';
 
   // Menú principal para Timoteo (personalizado)
   const menuTimoteoPrincipal = [
@@ -95,6 +96,21 @@ const MobileNav: React.FC<MobileNavProps> = ({ vistaActual, onNavegar }) => {
     { id: 'configuracion', label: 'Config', icon: Settings },
   ];
 
+  // Menú extendido para Pastor Principal
+  const menuPastorPrincipalExtendido = [
+    { id: 'integrantes-pastor-principal', label: 'Liderazgo', icon: Users },
+    { id: 'red-gap', label: 'Red Global', icon: BarChart3 },
+    { id: 'crear-usuario', label: 'Crear Rol', icon: Crown },
+    { id: 'gaps', label: 'GAPs', icon: MapPin },
+    { id: 'escalamientos', label: 'Casos', icon: TrendingUp },
+    { id: 'peticiones-pastor', label: 'Oración', icon: MessageSquare },
+    { id: 'calendario', label: 'Calendario', icon: Calendar },
+    { id: 'ensenanza-pastor', label: 'Material', icon: BookOpen },
+    { id: 'videollamada-pastor-principal', label: 'Video', icon: Video },
+    { id: 'reportes-pastor-principal', label: 'Reportes', icon: BarChart3 },
+    { id: 'configuracion', label: 'Config', icon: Settings },
+  ];
+
   // Menú principal estándar (máximo 4 items visibles)
   const menuPrincipal = [
     { id: 'dashboard', label: 'Inicio', icon: Home },
@@ -131,6 +147,12 @@ const MobileNav: React.FC<MobileNavProps> = ({ vistaActual, onNavegar }) => {
   } else if (esTimoteo) {
     itemsPrincipal = menuTimoteoPrincipal;
     itemsExtendido = menuTimoteoExtendido;
+  } else if (esPastorPrincipal) {
+    itemsPrincipal = menuPrincipal.filter(item => {
+      if (!item.permiso) return true;
+      return tienePermiso(item.permiso);
+    });
+    itemsExtendido = menuPastorPrincipalExtendido;
   } else if (esPastor) {
     itemsPrincipal = menuPrincipal.filter(item => {
       if (!item.permiso) return true;
@@ -167,9 +189,8 @@ const MobileNav: React.FC<MobileNavProps> = ({ vistaActual, onNavegar }) => {
 
   return (
     <>
-      {/* Navegación Principal */}
-      <nav className="mobile-menu lg:hidden">
-        <div className="flex justify-around items-center">
+      {/* Navegación Principal Bottom Bar (Stitch Professional Blue) */}
+      <nav className="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center pt-2 pb-safe px-4 glass-panel border-t border-outline-variant/30 lg:hidden bg-surface/90">
           {itemsPrincipal.map((item) => {
             const Icon = item.icon;
             const isActive = vistaActual === item.id;
@@ -179,55 +200,47 @@ const MobileNav: React.FC<MobileNavProps> = ({ vistaActual, onNavegar }) => {
                 key={item.id}
                 onClick={() => onNavegar(item.id)}
                 className={cn(
-                  'mobile-menu-item flex flex-col items-center justify-center py-2 px-2',
-                  isActive && 'text-primary'
+                  'flex flex-col items-center justify-center transition-colors py-2',
+                  isActive ? 'text-primary scale-110 transition-all' : 'text-on-surface-variant hover:text-primary'
                 )}
-                style={{ color: isActive ? tema.primario : undefined }}
+                style={isActive ? { WebkitTapHighlightColor: 'transparent' } : {}}
               >
-                <div className={cn(
-                  'p-1.5 rounded-xl transition-all',
-                  isActive && 'bg-primary/10'
-                )}>
-                  <Icon className="w-5 h-5" />
-                </div>
-                <span className="text-[10px] font-medium mt-0.5">{item.label}</span>
+                <Icon className="w-6 h-6 mb-1" />
+                <span className="text-label-sm font-label-sm mt-0.5">
+                  {item.label}
+                </span>
               </button>
             );
           })}
 
-          {/* Botón Menú Extendido */}
+          {/* Botón Menú Extendido (Sheet) */}
           {!esAdmin && itemsExtendido.length > 0 && (
             <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
               <SheetTrigger asChild>
                 <button
                   className={cn(
-                    'mobile-menu-item flex flex-col items-center justify-center py-2 px-2',
-                    menuOpen && 'text-primary'
+                    'flex flex-col items-center justify-center transition-colors py-2',
+                    menuOpen ? 'text-primary scale-110 transition-all' : 'text-on-surface-variant hover:text-primary'
                   )}
-                  style={{ color: menuOpen ? tema.primario : undefined }}
+                  style={menuOpen ? { WebkitTapHighlightColor: 'transparent' } : {}}
                 >
-                  <div className={cn(
-                    'p-1.5 rounded-xl transition-all',
-                    menuOpen && 'bg-primary/10'
-                  )}>
-                    <Menu className="w-5 h-5" />
-                  </div>
-                  <span className="text-[10px] font-medium mt-0.5">Más</span>
+                  <Menu className="w-6 h-6 mb-1" />
+                  <span className="text-label-sm font-label-sm mt-0.5">
+                    Más
+                  </span>
                 </button>
               </SheetTrigger>
-              <SheetContent side="bottom" className="h-auto max-h-[70vh]">
-                <SheetHeader>
-                  <SheetTitle className="text-left flex items-center gap-2">
-                    <div 
-                      className="w-8 h-8 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${tema.primario}15` }}
-                    >
-                      <Menu className="w-4 h-4" style={{ color: tema.primario }} />
+              <SheetContent side="bottom" className="h-[80vh] bg-surface rounded-t-[24px] border-t border-outline-variant/30">
+                <SheetHeader className="pb-4 border-b border-outline-variant/30 text-left">
+                  <SheetTitle className="text-headline-md font-bold text-on-surface flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-primary-container/10 flex items-center justify-center border border-primary-container/20">
+                      <Menu className="w-5 h-5 text-primary" />
                     </div>
-                    Más Opciones
+                    Menú Completo
                   </SheetTitle>
                 </SheetHeader>
-                <div className="grid grid-cols-3 gap-3 mt-6">
+                
+                <div className="grid grid-cols-3 gap-4 pt-6 overflow-y-auto pb-8 custom-scrollbar">
                   {itemsExtendido.map((item) => {
                     const Icon = item.icon;
                     const isActive = vistaActual === item.id;
@@ -237,28 +250,21 @@ const MobileNav: React.FC<MobileNavProps> = ({ vistaActual, onNavegar }) => {
                         key={item.id}
                         onClick={() => handleNavigate(item.id)}
                         className={cn(
-                          'flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all',
+                          'flex flex-col items-center justify-center p-3 rounded-[16px] transition-all shadow-sm border',
                           isActive 
-                            ? 'border-primary bg-primary/5' 
-                            : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+                            ? 'bg-primary-container/10 border-primary-container/30' 
+                            : 'bg-surface border-outline-variant/30 hover:bg-surface-variant'
                         )}
-                        style={{ 
-                          borderColor: isActive ? tema.primario : undefined,
-                          backgroundColor: isActive ? `${tema.primario}10` : undefined
-                        }}
                       >
-                        <div 
-                          className="w-10 h-10 rounded-xl flex items-center justify-center"
-                          style={{ backgroundColor: isActive ? `${tema.primario}20` : '#f3f4f6' }}
-                        >
-                          <Icon 
-                            className="w-5 h-5" 
-                            style={{ color: isActive ? tema.primario : '#6b7280' }} 
-                          />
+                        <div className={cn(
+                          'w-10 h-10 rounded-full flex items-center justify-center mb-2',
+                          isActive ? 'bg-primary-container text-on-primary-container' : 'bg-surface-variant text-on-surface-variant'
+                        )}>
+                          <Icon className="w-5 h-5" />
                         </div>
                         <span className={cn(
-                          'text-xs font-medium',
-                          isActive ? 'text-primary' : 'text-gray-600'
+                          "text-label-sm text-center",
+                          isActive ? "text-primary font-bold" : "text-on-surface font-medium"
                         )}>
                           {item.label}
                         </span>
@@ -269,7 +275,6 @@ const MobileNav: React.FC<MobileNavProps> = ({ vistaActual, onNavegar }) => {
               </SheetContent>
             </Sheet>
           )}
-        </div>
       </nav>
     </>
   );

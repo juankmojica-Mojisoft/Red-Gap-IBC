@@ -284,7 +284,7 @@ const GestionUsuariosAdmin: React.FC<{ onVolver: () => void }> = ({ onVolver }) 
   const getRolLabel = (rol: RolUsuario) => ROLES.find(r => r.value === rol)?.label || rol;
 
   return (
-    <div className="p-6 max-w-6xl mx-auto animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       <div className="flex items-center gap-4 mb-6">
         <Button variant="outline" onClick={onVolver}><ArrowLeft className="w-4 h-4 mr-2" /> Volver</Button>
         <h1 className="text-2xl font-bold">Gestion de Usuarios</h1>
@@ -590,3 +590,4 @@ const GestionUsuariosAdmin: React.FC<{ onVolver: () => void }> = ({ onVolver }) 
 };
 
 export default GestionUsuariosAdmin;
+

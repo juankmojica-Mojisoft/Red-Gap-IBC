@@ -61,15 +61,40 @@ const GestionGAPForm: React.FC<GestionGAPFormProps> = ({ onVolver, onExito, gapE
     onConfirmar: () => {},
   });
   
-  // Generar código GAP automáticamente
-  const generarCodigoGAP = () => {
-    const siguienteNumero = gapsMock.length + 1;
-    return `GAP-${siguienteNumero}`;
+  // Leer gaps guardados
+  const getGapsGuardados = () => {
+    const saved = localStorage.getItem('gaps');
+    if (saved) {
+      try { return JSON.parse(saved); } catch (e) {}
+    }
+    return gapsMock;
   };
   
+  const getNumerosReciclados = (): number[] => {
+    const guardados = localStorage.getItem('numerosGAPsDisponibles');
+    if (guardados) {
+      try { return JSON.parse(guardados); } catch (e) {}
+    }
+    return [];
+  };
+
+  const [numerosReciclados, setNumerosReciclados] = useState<number[]>(getNumerosReciclados());
+  
+  // Generar número GAP automáticamente
+  const generarNumeroGAP = () => {
+    const rec = getNumerosReciclados();
+    if (rec.length > 0) return rec[0]; // Sugerir el menor reciclado
+    
+    const gapsGuardados = getGapsGuardados();
+    const maxNumero = gapsGuardados.reduce((max: number, gap: any) => gap.numero > max ? gap.numero : max, 0);
+    return maxNumero + 1;
+  };
+  
+  const initNumero = gapEditar?.numero || generarNumeroGAP();
+
   const [formData, setFormData] = useState({
-    numero: gapEditar?.numero || gapsMock.length + 1,
-    codigo: gapEditar?.codigo || generarCodigoGAP(),
+    numero: initNumero,
+    codigo: gapEditar?.codigo || `GAP-${initNumero}`,
     liderGapId: gapEditar?.liderGapId || '',
     timoteoId: gapEditar?.timoteoId || '',
     pastorId: gapEditar?.pastorId || usuario?.id || '',
@@ -391,6 +416,8 @@ const GestionGAPForm: React.FC<GestionGAPFormProps> = ({ onVolver, onExito, gapE
         const liderMentor = usuariosMock.find(u => u.id === formData.liderMentorId);
 
         const gapData = {
+          numero: formData.numero,
+          codigo: formData.codigo,
           liderGapId: formData.liderGapId,
           liderGapNombre: lider ? `${lider.nombre} ${lider.apellidos}` : '',
           timoteoId: formData.timoteoId,
@@ -426,6 +453,13 @@ const GestionGAPForm: React.FC<GestionGAPFormProps> = ({ onVolver, onExito, gapE
           if (resultado) {
             exito = true;
             toast.success('GAP creado exitosamente');
+            
+            // Si usamos un número reciclado, removerlo de los disponibles
+            if (numerosReciclados.includes(formData.numero)) {
+              const nuevosReciclados = numerosReciclados.filter(n => n !== formData.numero);
+              localStorage.setItem('numerosGAPsDisponibles', JSON.stringify(nuevosReciclados));
+              setNumerosReciclados(nuevosReciclados);
+            }
           } else {
             toast.error('Error al guardar el GAP en la base de datos');
             setGuardandoForm(false);
@@ -530,9 +564,57 @@ const GestionGAPForm: React.FC<GestionGAPFormProps> = ({ onVolver, onExito, gapE
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label>Código De GAP</Label>
-                <Input value={formData.codigo} disabled className="bg-gray-100 font-mono text-lg" />
-                <p className="text-xs text-gray-500">Código Asignado Automáticamente</p>
+                <div className="flex items-center justify-between">
+                  <Label>Código De GAP</Label>
+                  {!gapEditar && numerosReciclados.length > 0 && (
+                    <span className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                      Números reciclados disponibles
+                    </span>
+                  )}
+                </div>
+                
+                {gapEditar ? (
+                  <Input value={formData.codigo} disabled className="bg-gray-100 font-mono text-lg" />
+                ) : numerosReciclados.length > 0 ? (
+                  <div className="flex gap-3">
+                    <Select
+                      value={formData.numero.toString()}
+                      onValueChange={(val) => {
+                        const num = parseInt(val);
+                        setFormData(prev => ({
+                          ...prev,
+                          numero: num,
+                          codigo: `GAP-${num}`
+                        }));
+                      }}
+                    >
+                      <SelectTrigger className="font-mono text-lg h-11">
+                        <SelectValue placeholder="Selecciona un número..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {numerosReciclados.map(num => (
+                          <SelectItem key={num} value={num.toString()}>GAP-{num} (Reciclado)</SelectItem>
+                        ))}
+                        {/* Option for standard new number */}
+                        {(() => {
+                          const max = getGapsGuardados().reduce((m: number, g: any) => g.numero > m ? g.numero : m, 0);
+                          const next = max + 1;
+                          if (!numerosReciclados.includes(next)) {
+                            return <SelectItem value={next.toString()}>GAP-{next} (Nuevo)</SelectItem>;
+                          }
+                          return null;
+                        })()}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                ) : (
+                  <Input value={formData.codigo} disabled className="bg-gray-100 font-mono text-lg" />
+                )}
+                <p className="text-xs text-gray-500">
+                  {gapEditar ? "Código actual del GAP" : 
+                   numerosReciclados.length > 0 ? "Puedes reusar un número de un GAP eliminado o crear uno nuevo" : 
+                   "Código Asignado Automáticamente"}
+                </p>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

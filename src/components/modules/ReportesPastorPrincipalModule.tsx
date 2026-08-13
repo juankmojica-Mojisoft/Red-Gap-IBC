@@ -64,6 +64,11 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
   const [generando, setGenerando] = useState(false);
   const [generandoExcel, setGenerandoExcel] = useState(false);
   const [periodo, setPeriodo] = useState('marzo-2026');
+  const [filtrosLiderazgo, setFiltrosLiderazgo] = useState<string[]>([]);
+    
+  const toggleFiltroLiderazgo = (filtro: string) => {
+    setFiltrosLiderazgo(prev => prev.includes(filtro) ? prev.filter(f => f !== filtro) : [...prev, filtro]);
+  };
   
   const estadisticas = getEstadisticas();
 
@@ -284,7 +289,7 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
           doc.text(`Día/Hora: ${gap.diaReunion} a las ${formatearHora12(gap.horaReunion)}`, 110, y + 14);
           doc.text(`Frecuencia/Modalidad: ${gap.frecuencia} / ${gap.modalidad}`, 110, y + 20);
           doc.text(`Dirección: ${gap.direccion.length > 35 ? gap.direccion.slice(0, 33) + '..' : gap.direccion}`, 110, y + 26);
-          doc.text(`Total Integrantes: ${gap.miembros.length + 2}`, 110, y + 32);
+          doc.text(`Total Integrantes: ${miembrosMock.filter(m => m.gapId === gap.id).length}`, 110, y + 32);
           
           y += 45;
         });
@@ -872,12 +877,12 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-72">
+                <div className="h-96 min-h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={gapsPorPastor} layout="vertical">
+                    <BarChart data={gapsPorPastor} layout="vertical" margin={{ left: 10, right: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis type="number" />
-                      <YAxis dataKey="nombre" type="category" width={100} />
+                      <YAxis dataKey="nombre" type="category" width={140} tick={{ fontSize: 12 }} />
                       <Tooltip 
                         contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #e5e7eb' }}
                       />
@@ -899,9 +904,7 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={asistenciaPorGAP}>
+                <div className="h-80"><ResponsiveContainer width="100%" height="100%"><BarChart data={asistenciaPorGAP} margin={{ bottom: 20 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="nombre" />
                       <YAxis domain={[0, 100]} />
@@ -938,7 +941,7 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                     </div>
                     <p className="text-sm text-gray-500">{gap.pastorNombre}</p>
                     <div className="flex items-center gap-4 mt-2 text-xs text-gray-400">
-                      <span>{gap.miembros.length + 2} integrantes</span>
+                      <span>{miembrosMock.filter(m => m.gapId === gap.id).length} integrantes</span>
                       <span>{gap.diaReunion}</span>
                     </div>
                   </div>
@@ -972,15 +975,7 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                 <div className="h-72">
                   <ResponsiveContainer width="100%" height="100%">
                     <RePieChart>
-                      <Pie
-                        data={escalamientosPorEstado}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="cantidad"
-                      >
+                      <Pie data={escalamientosPorEstado} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="cantidad">
                         {escalamientosPorEstado.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
@@ -1002,9 +997,7 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-72">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={escalamientosPorClasificacion}>
+                <div className="h-80"><ResponsiveContainer width="100%" height="100%"><BarChart data={escalamientosPorClasificacion} margin={{ bottom: 30 }}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
                       <XAxis dataKey="clasificacion" />
                       <YAxis />
@@ -1074,9 +1067,9 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="h-72">
+                <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <RePieChart>
+                    <RePieChart margin={{ top: 20, bottom: 20 }}>
                       <Pie
                         data={miembrosPorEstado}
                         cx="50%"
@@ -1145,7 +1138,11 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
         {/* Reporte de Líderes y Timoteos */}
         <TabsContent value="lideres" className="space-y-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Card className="border-l-4" style={{ borderLeftColor: tema.primario }}>
+            <Card 
+              className={`border-l-4 cursor-pointer transition-all hover:-translate-y-1 ${filtrosLiderazgo.includes('lider_gap') ? 'ring-2 ring-offset-2' : ''}`} 
+              style={{ borderLeftColor: tema.primario, '--tw-ring-color': tema.primario } as React.CSSProperties}
+              onClick={() => toggleFiltroLiderazgo('lider_gap')}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1158,7 +1155,11 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-l-4" style={{ borderLeftColor: tema.secundario }}>
+            <Card 
+              className={`border-l-4 cursor-pointer transition-all hover:-translate-y-1 ${filtrosLiderazgo.includes('timoteo') ? 'ring-2 ring-offset-2' : ''}`} 
+              style={{ borderLeftColor: tema.secundario, '--tw-ring-color': tema.secundario } as React.CSSProperties}
+              onClick={() => toggleFiltroLiderazgo('timoteo')}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1171,7 +1172,10 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-l-4 border-purple-500">
+            <Card 
+              className={`border-l-4 border-purple-500 cursor-pointer transition-all hover:-translate-y-1 ${filtrosLiderazgo.includes('graduado') ? 'ring-2 ring-purple-500 ring-offset-2' : ''}`}
+              onClick={() => toggleFiltroLiderazgo('graduado')}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1186,7 +1190,10 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
                 </div>
               </CardContent>
             </Card>
-            <Card className="border-l-4 border-amber-500">
+            <Card 
+              className={`border-l-4 border-amber-500 cursor-pointer transition-all hover:-translate-y-1 ${filtrosLiderazgo.includes('cursando') ? 'ring-2 ring-amber-500 ring-offset-2' : ''}`}
+              onClick={() => toggleFiltroLiderazgo('cursando')}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -1253,7 +1260,17 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
             <CardContent>
               <div className="space-y-4">
                 {usuariosMock
-                  .filter(u => u.rol === 'lider_gap' || u.rol === 'timoteo')
+                  .filter(u => {
+                    if (u.rol !== 'lider_gap' && u.rol !== 'timoteo') return false;
+                    if (filtrosLiderazgo.length === 0) return true;
+                    
+                    const matchesLider = filtrosLiderazgo.includes('lider_gap') && u.rol === 'lider_gap';
+                    const matchesTimoteo = filtrosLiderazgo.includes('timoteo') && u.rol === 'timoteo';
+                    const matchesGraduado = filtrosLiderazgo.includes('graduado') && u.escuelaFormacion === 'Graduado';
+                    const matchesCursando = filtrosLiderazgo.includes('cursando') && u.escuelaFormacion === 'Cursando';
+                    
+                    return matchesLider || matchesTimoteo || matchesGraduado || matchesCursando;
+                  })
                   .map((u) => {
                     const gap = gapsMock.find(g => g.liderGapId === u.id || g.timoteoId === u.id);
                     const mentor = usuariosMock.find(m => m.id === u.liderMentorId);
@@ -1321,3 +1338,5 @@ const ReportesPastorPrincipalModule: React.FC<ReportesPastorPrincipalModuleProps
 };
 
 export default ReportesPastorPrincipalModule;
+
+

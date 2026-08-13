@@ -188,7 +188,7 @@ const ReportesModule: React.FC<ReportesModuleProps> = ({ onVolver }) => {
           doc.text(gap.liderGapNombre.length > 25 ? gap.liderGapNombre.slice(0, 23) + '..' : gap.liderGapNombre, 42, y + 5);
           doc.text(gap.pastorNombre.length > 25 ? gap.pastorNombre.slice(0, 23) + '..' : gap.pastorNombre, 92, y + 5);
           doc.text(gap.modalidad, 142, y + 5);
-          doc.text(`${gap.miembros.length}`, 174, y + 5);
+          doc.text(`${miembrosMock.filter(m => m.gapId === gap.id).length}`, 174, y + 5);
           y += 7;
         });
 
@@ -268,7 +268,7 @@ const ReportesModule: React.FC<ReportesModuleProps> = ({ onVolver }) => {
           doc.text(`Día/Hora: ${gap.diaReunion} a las ${formatearHora12(gap.horaReunion)}`, 110, y + 14);
           doc.text(`Frecuencia/Modalidad: ${gap.frecuencia} / ${gap.modalidad}`, 110, y + 20);
           doc.text(`Dirección: ${gap.direccion.length > 35 ? gap.direccion.slice(0, 33) + '..' : gap.direccion}`, 110, y + 26);
-          doc.text(`Total Integrantes: ${gap.miembros.length + 2}`, 110, y + 32);
+          doc.text(`Total Integrantes: ${miembrosMock.filter(m => m.gapId === gap.id).length}`, 110, y + 32);
           
           y += 45;
         });
@@ -454,7 +454,7 @@ const ReportesModule: React.FC<ReportesModuleProps> = ({ onVolver }) => {
   ];
 
   return (
-    <div className="p-6 max-w-6xl mx-auto animate-fade-in pb-24 lg:pb-6">
+    <div className="px-margin-mobile md:px-margin-desktop max-w-7xl mx-auto mt-gutter animate-fade-in pb-24 lg:pb-6 space-y-gutter">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-4">
@@ -1046,3 +1046,6 @@ const ReportesModule: React.FC<ReportesModuleProps> = ({ onVolver }) => {
 };
 
 export default ReportesModule;
+
+
+
