@@ -15,6 +15,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from '@/components/ui/hover-card';
 import { 
   ArrowLeft, 
   Calendar, 
@@ -123,31 +128,32 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
     if (!usuario) return false;
     const fechaStr = fecha.toISOString().split('T')[0];
     
-    const eventosPastorPrincipal = eventosCalendarioMock.filter(e => 
-      e.fecha === fechaStr && e.creadorRol === 'pastor_principal' && e.prioridad === 'Alta' && e.activo
-    );
-    const eventosPastor = eventosCalendarioMock.filter(e => 
-      e.fecha === fechaStr && e.creadorRol === 'pastor' && e.prioridad === 'Alta' && e.activo
+    // Eventos de alta prioridad o de la iglesia general
+    const eventosIglesia = eventosCalendarioMock.filter(e => 
+      e.fecha === fechaStr && 
+      (e.creadorRol === 'pastor_principal' || e.creadorRol === 'administrador' || e.prioridad === 'Alta') && 
+      e.activo
     );
     
-    if (usuario.rol === 'pastor_principal') return true;
-    if (usuario.rol === 'pastor') return eventosPastorPrincipal.length === 0;
-    if (['lider_mentor', 'lider_gap', 'timoteo'].includes(usuario.rol)) {
-      return eventosPastorPrincipal.length === 0 && eventosPastor.length === 0;
-    }
-    return false;
+    // Los administradores o pastores principales siempre pueden
+    if (usuario.rol === 'pastor_principal' || usuario.rol === 'administrador') return true;
+    
+    // Si hay un evento de la iglesia, los demás roles NO pueden programar nada ese día
+    if (eventosIglesia.length > 0) return false;
+    
+    return true;
   };
 
   const getColorEvento = (tipo: string, prioridad?: string) => {
-    if (tipo === 'Cumpleaños') return { bg: 'bg-pink-500/20', text: 'text-pink-400', border: 'border-pink-500/30', icon: Gift };
-    if (prioridad === 'Alta') return { bg: 'bg-red-500/20', text: 'text-red-400', border: 'border-red-500/30', icon: AlertCircle };
+    if (tipo === 'Cumpleaños') return { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-200', icon: Gift };
+    if (prioridad === 'Alta') return { bg: 'bg-red-100', text: 'text-red-700', border: 'border-red-200', icon: AlertCircle };
     
     switch (tipo) {
-      case 'Reunion': return { bg: 'bg-blue-500/20', text: 'text-blue-400', border: 'border-blue-500/30', icon: Users };
-      case 'Evento': return { bg: 'bg-purple-500/20', text: 'text-purple-400', border: 'border-purple-500/30', icon: Star };
-      case 'Actividad': return { bg: 'bg-green-500/20', text: 'text-green-400', border: 'border-green-500/30', icon: Activity };
-      case 'ReunionGAP': return { bg: 'bg-orange-500/20', text: 'text-orange-400', border: 'border-orange-500/30', icon: Users };
-      default: return { bg: 'bg-white/10', text: 'text-white/70', border: 'border-white/20', icon: Calendar };
+      case 'Reunion': return { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200', icon: Users };
+      case 'Evento': return { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200', icon: Star };
+      case 'Actividad': return { bg: 'bg-green-100', text: 'text-green-700', border: 'border-green-200', icon: Activity };
+      case 'ReunionGAP': return { bg: 'bg-orange-100', text: 'text-orange-700', border: 'border-orange-200', icon: Users };
+      default: return { bg: 'bg-gray-100', text: 'text-gray-700', border: 'border-gray-200', icon: Calendar };
     }
   };
 
@@ -164,19 +170,19 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
   const mesActualCapitalizado = format(currentDate, 'MMMM', { locale: es }).charAt(0).toUpperCase() + format(currentDate, 'MMMM', { locale: es }).slice(1);
 
   return (
-    <div className="space-y-6 animate-fade-in pb-20 md:pb-0 text-white">
+    <div className="space-y-6 animate-fade-in pb-20 md:pb-0 text-slate-900">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <Button variant="ghost" onClick={onVolver} className="text-white hover:bg-white/10">
+          <Button variant="ghost" onClick={onVolver} className="text-slate-600 hover:bg-slate-100">
             <ArrowLeft className="w-5 h-5" />
           </Button>
-          <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+          <h1 className="text-2xl font-bold text-slate-900">
             Calendario de Red
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <Button onClick={goToToday} className="bg-white/10 hover:bg-white/20 text-white border-none shadow-none">
+          <Button onClick={goToToday} variant="outline" className="bg-white hover:bg-slate-50 text-slate-700">
             Hoy
           </Button>
           {puedeCrearEvento(new Date()) && (
@@ -188,28 +194,28 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
       </div>
 
       {/* Calendario */}
-      <Card className="bg-slate-900/50 border-white/10 backdrop-blur-md overflow-hidden">
-        <CardHeader className="border-b border-white/5 py-4">
+      <Card className="bg-white border-slate-200 shadow-sm overflow-hidden">
+        <CardHeader className="border-b border-slate-100 py-4 bg-slate-50/50">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-xl font-medium text-white">
-              <Calendar className="w-5 h-5 text-emerald-400" />
+            <CardTitle className="flex items-center gap-2 text-xl font-semibold text-slate-800">
+              <Calendar className="w-5 h-5 text-emerald-600" />
               {mesActualCapitalizado} {currentDate.getFullYear()}
             </CardTitle>
             <div className="flex items-center gap-2">
-              <Button variant="outline" size="icon" onClick={prevMonth} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+              <Button variant="outline" size="icon" onClick={prevMonth} className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900">
                 <ChevronLeft className="w-4 h-4" />
               </Button>
-              <Button variant="outline" size="icon" onClick={nextMonth} className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+              <Button variant="outline" size="icon" onClick={nextMonth} className="bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900">
                 <ChevronRight className="w-4 h-4" />
               </Button>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="p-4 sm:p-6">
+        <CardContent className="p-4 sm:p-6 bg-white">
           {/* Días de la semana */}
           <div className="grid grid-cols-7 gap-2 mb-2">
             {nombresDias.map(dia => (
-              <div key={dia} className="text-center text-xs font-semibold uppercase tracking-widest text-white/40 py-2">
+              <div key={dia} className="text-center text-xs font-bold uppercase tracking-widest text-slate-500 py-2">
                 {dia}
               </div>
             ))}
@@ -224,46 +230,78 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
               const dayPuedeCrear = puedeCrearEvento(day);
               
               return (
-                <div
-                  key={index}
-                  onClick={() => handleDayClick(day)}
-                  className={`
-                    min-h-[90px] sm:min-h-[120px] p-2 rounded-xl transition-all border cursor-pointer
-                    ${esMesActual ? 'bg-white/5 border-white/5 hover:border-emerald-500/50 hover:bg-white/10' : 'bg-transparent border-transparent opacity-30 pointer-events-none'}
-                    ${esHoy ? 'border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)] bg-emerald-500/5' : ''}
-                    ${!dayPuedeCrear && esMesActual ? 'opacity-80' : ''}
-                    group flex flex-col
-                  `}
-                >
-                  <div className={`text-right text-sm font-medium mb-2 ${esHoy ? 'text-emerald-400' : 'text-white/60 group-hover:text-white'}`}>
-                    <span className={esHoy ? 'bg-emerald-500/20 px-2 py-0.5 rounded-full' : ''}>
-                      {day.getDate()}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5 flex-1 overflow-hidden">
-                    {eventosDelDia.slice(0, 3).map((evento: any, idx) => {
-                      const tipo = evento.tipoAuto ? 'Cumpleaños' : evento.tipo;
-                      const colores = getColorEvento(tipo, evento.prioridad);
-                      
-                      return (
-                        <div
-                          key={idx}
-                          onClick={(e) => handleEventoClick(evento as EventoCalendario, e)}
-                          className={`text-xs px-2 py-1 rounded-md border truncate transition-opacity flex items-center gap-1.5 ${colores.bg} ${colores.text} ${colores.border} hover:opacity-80`}
-                          title={evento.titulo}
-                        >
-                          <colores.icon className="w-3 h-3 flex-shrink-0" />
-                          <span className="truncate">{evento.titulo}</span>
-                        </div>
-                      );
-                    })}
-                    {eventosDelDia.length > 3 && (
-                      <div className="text-[10px] text-white/50 text-center font-medium bg-white/5 rounded-md py-0.5">
-                        +{eventosDelDia.length - 3} más
+                <HoverCard key={index} openDelay={200}>
+                  <HoverCardTrigger asChild>
+                    <div
+                      onClick={() => handleDayClick(day)}
+                      className={`
+                        min-h-[100px] sm:min-h-[130px] p-2 rounded-xl transition-all border cursor-pointer
+                        ${esMesActual ? 'bg-white border-slate-100 hover:border-emerald-300 hover:shadow-md' : 'bg-slate-50/50 border-transparent opacity-40 pointer-events-none'}
+                        ${esHoy ? 'border-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.1)] bg-emerald-50/30' : ''}
+                        ${!dayPuedeCrear && esMesActual ? 'opacity-90 bg-slate-50/80' : ''}
+                        flex flex-col group
+                      `}
+                    >
+                      <div className={`text-right text-sm font-semibold mb-2 ${esHoy ? 'text-emerald-600' : 'text-slate-500 group-hover:text-emerald-600 transition-colors'}`}>
+                        <span className={esHoy ? 'bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full' : ''}>
+                          {day.getDate()}
+                        </span>
                       </div>
-                    )}
-                  </div>
-                </div>
+                      <div className="space-y-1.5 flex-1 overflow-y-auto scrollbar-none">
+                        {eventosDelDia.slice(0, 3).map((evento: any, idx) => {
+                          const tipo = evento.tipoAuto ? 'Cumpleaños' : evento.tipo;
+                          const colores = getColorEvento(tipo, evento.prioridad);
+                          
+                          return (
+                            <div
+                              key={idx}
+                              onClick={(e) => handleEventoClick(evento as EventoCalendario, e)}
+                              className={`text-xs px-2 py-1 rounded-md border truncate transition-opacity flex items-center gap-1.5 ${colores.bg} ${colores.text} ${colores.border} hover:opacity-80`}
+                              title={evento.titulo}
+                            >
+                              <colores.icon className="w-3 h-3 flex-shrink-0" />
+                              <span className="truncate font-medium">{evento.titulo}</span>
+                            </div>
+                          );
+                        })}
+                        {eventosDelDia.length > 3 && (
+                          <div className="text-[10px] text-slate-500 font-bold bg-slate-100 rounded-md py-1 px-2 flex items-center justify-between">
+                            <span>+{eventosDelDia.length - 3} más</span>
+                            <ChevronRight className="w-3 h-3" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </HoverCardTrigger>
+                  
+                  {eventosDelDia.length > 0 && esMesActual && (
+                    <HoverCardContent side="right" align="start" className="w-64 p-3 bg-white shadow-xl border-slate-200 z-50">
+                      <div className="font-bold text-slate-800 border-b border-slate-100 pb-2 mb-2 flex items-center justify-between">
+                        <span>Eventos del {format(day, 'dd MMM', { locale: es })}</span>
+                        <Badge variant="secondary" className="bg-emerald-100 text-emerald-700">{eventosDelDia.length}</Badge>
+                      </div>
+                      <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
+                        {eventosDelDia.map((evento: any, idx) => {
+                          const tipo = evento.tipoAuto ? 'Cumpleaños' : evento.tipo;
+                          const colores = getColorEvento(tipo, evento.prioridad);
+                          return (
+                            <div key={idx} className={`text-xs p-2 rounded-md border flex flex-col gap-1 ${colores.bg} ${colores.text} ${colores.border}`}>
+                              <div className="flex items-center gap-1.5 font-bold">
+                                <colores.icon className="w-3.5 h-3.5 flex-shrink-0" />
+                                <span className="line-clamp-1">{evento.titulo}</span>
+                              </div>
+                              {evento.hora && (
+                                <div className="flex items-center gap-1 text-[10px] opacity-80 pl-5">
+                                  <Clock className="w-3 h-3" /> {formatearHora12(evento.hora)}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </HoverCardContent>
+                  )}
+                </HoverCard>
               );
             })}
           </div>
@@ -281,30 +319,30 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
 
       {/* Sheet de Agenda Diaria */}
       <Sheet open={!!selectedDate} onOpenChange={(open) => !open && setSelectedDate(null)}>
-        <SheetContent className="w-full sm:max-w-md border-l border-white/10 bg-slate-950 text-white p-0">
+        <SheetContent className="w-full sm:max-w-md border-l border-slate-200 bg-white text-slate-900 p-0 shadow-2xl">
           {selectedDate && (
             <div className="flex flex-col h-full">
-              <SheetHeader className="p-6 border-b border-white/10 bg-slate-900/80 sticky top-0 z-10 backdrop-blur-md">
-                <SheetTitle className="text-xl font-bold text-white flex items-center gap-3 m-0">
-                  <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex flex-col items-center justify-center text-emerald-400 border border-emerald-500/30">
-                    <span className="text-xs uppercase font-bold leading-none">{format(selectedDate, 'MMM', { locale: es })}</span>
-                    <span className="text-lg font-black leading-none">{format(selectedDate, 'dd')}</span>
+              <SheetHeader className="p-6 border-b border-slate-100 bg-slate-50/80 sticky top-0 z-10 backdrop-blur-md">
+                <SheetTitle className="text-xl font-bold text-slate-900 flex items-center gap-3 m-0">
+                  <div className="w-12 h-12 rounded-xl bg-emerald-100 flex flex-col items-center justify-center text-emerald-700 border border-emerald-200 shadow-sm">
+                    <span className="text-[10px] uppercase font-bold leading-none">{format(selectedDate, 'MMM', { locale: es })}</span>
+                    <span className="text-xl font-black leading-none mt-0.5">{format(selectedDate, 'dd')}</span>
                   </div>
                   <div>
-                    <span className="block capitalize">{format(selectedDate, 'eeee', { locale: es })}</span>
-                    <span className="text-sm font-normal text-white/60">Agenda del Día</span>
+                    <span className="block capitalize text-slate-800">{format(selectedDate, 'eeee', { locale: es })}</span>
+                    <span className="text-sm font-medium text-slate-500">Agenda del Día</span>
                   </div>
                 </SheetTitle>
               </SheetHeader>
               
-              <div className="flex-1 overflow-y-auto p-6">
+              <div className="flex-1 overflow-y-auto p-6 bg-slate-50/30">
                 {getEventosDelDia(selectedDate).length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-50 py-12">
-                    <Calendar className="w-16 h-16 text-white/20" />
-                    <p>No hay eventos programados para este día.</p>
+                  <div className="h-full flex flex-col items-center justify-center text-center space-y-4 opacity-70 py-12">
+                    <Calendar className="w-16 h-16 text-slate-300" />
+                    <p className="text-slate-500 font-medium">No hay eventos programados para este día.</p>
                   </div>
                 ) : (
-                  <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-white/10 before:to-transparent">
+                  <div className="space-y-4 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
                     {getEventosDelDia(selectedDate).map((evento: any, idx) => {
                       const tipo = evento.tipoAuto ? 'Cumpleaños' : evento.tipo;
                       const colores = getColorEvento(tipo, evento.prioridad);
@@ -312,31 +350,31 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
                       return (
                         <div key={idx} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                           {/* Timeline dot */}
-                          <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-slate-950 ${colores.bg} ${colores.text} shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 absolute left-0 md:left-1/2 transform md:transform-none z-10`}>
+                          <div className={`flex items-center justify-center w-10 h-10 rounded-full border-4 border-white ${colores.bg} ${colores.text} shadow-sm shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 absolute left-0 md:left-1/2 transform md:transform-none z-10`}>
                             <colores.icon className="w-4 h-4" />
                           </div>
                           
                           {/* Card */}
                           <div className="w-[calc(100%-3rem)] md:w-[calc(50%-2.5rem)] ml-auto md:ml-0 cursor-pointer" onClick={() => setEventoSeleccionado(evento)}>
-                            <div className="p-4 rounded-xl bg-white/5 border border-white/10 hover:border-emerald-500/50 hover:bg-white/10 transition-all">
+                            <div className="p-4 rounded-xl bg-white border border-slate-200 shadow-sm hover:border-emerald-400 hover:shadow-md transition-all">
                               <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-bold text-white leading-tight">{evento.titulo}</h4>
+                                <h4 className="font-bold text-slate-800 leading-tight">{evento.titulo}</h4>
                               </div>
-                              <div className="flex flex-col gap-1.5 text-xs text-white/60">
+                              <div className="flex flex-col gap-1.5 text-xs text-slate-500">
                                 {evento.hora && (
                                   <div className="flex items-center gap-1.5">
-                                    <Clock className="w-3.5 h-3.5" />
-                                    <span>{formatearHora12(evento.hora)}</span>
+                                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                                    <span className="font-medium text-slate-700">{formatearHora12(evento.hora)}</span>
                                   </div>
                                 )}
                                 {evento.ubicacion && (
                                   <div className="flex items-center gap-1.5">
-                                    <MapPin className="w-3.5 h-3.5" />
-                                    <span className="truncate">{evento.ubicacion}</span>
+                                    <MapPin className="w-3.5 h-3.5 text-slate-400" />
+                                    <span className="truncate font-medium text-slate-700">{evento.ubicacion}</span>
                                   </div>
                                 )}
                                 <div className="mt-2">
-                                  <Badge className={`${colores.bg} ${colores.text} border-none`}>
+                                  <Badge className={`${colores.bg} ${colores.text} border-none font-semibold`}>
                                     {tipo}
                                   </Badge>
                                 </div>
@@ -350,20 +388,24 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
                 )}
               </div>
               
-              <div className="p-6 border-t border-white/10 bg-slate-900/50">
+              <div className="p-6 border-t border-slate-200 bg-white shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.05)] z-20">
                 {puedeCrearEvento(selectedDate) ? (
                   <Button 
                     onClick={() => {
                       setCreandoEventoEnFecha(selectedDate);
                       setSelectedDate(null);
                     }} 
-                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white shadow-md font-bold text-base py-6"
                   >
-                    <Plus className="w-4 h-4 mr-2" /> Programar Nuevo Evento
+                    <Plus className="w-5 h-5 mr-2" /> Programar Nuevo Evento
                   </Button>
                 ) : (
-                  <div className="text-center p-3 rounded-lg bg-orange-500/10 border border-orange-500/20 text-orange-400 text-sm flex items-center justify-center gap-2">
-                    <AlertCircle className="w-4 h-4" /> No puedes crear eventos este día
+                  <div className="text-center p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-sm flex flex-col items-center justify-center gap-2">
+                    <AlertCircle className="w-6 h-6 text-amber-500" /> 
+                    <span className="font-semibold">Día Reservado</span>
+                    <span className="text-amber-600/80 text-xs text-balance">
+                      Hay un evento general programado. No puedes crear eventos este día.
+                    </span>
                   </div>
                 )}
               </div>
