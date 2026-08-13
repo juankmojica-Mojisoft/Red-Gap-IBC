@@ -161,11 +161,6 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
     setSelectedDate(date);
   };
 
-  const handleEventoClick = (evento: EventoCalendario, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setEventoSeleccionado(evento);
-  };
-
   const nombresDias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
   const mesActualCapitalizado = format(currentDate, 'MMMM', { locale: es }).charAt(0).toUpperCase() + format(currentDate, 'MMMM', { locale: es }).slice(1);
 
