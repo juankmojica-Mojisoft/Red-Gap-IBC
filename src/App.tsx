@@ -484,7 +484,11 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--color-fondo)] text-[var(--color-texto)] lg:flex lg:items-center lg:justify-center lg:p-8 notranslate" translate="no">
+    <div 
+      className="min-h-screen text-[var(--color-texto)] lg:flex lg:items-center lg:justify-center lg:p-8 notranslate transition-colors duration-500" 
+      style={{ background: 'var(--color-main-bg, var(--color-fondo))' }}
+      translate="no"
+    >
       {/* Mobile Layout */}
       <div className="lg:hidden w-full min-h-screen bg-transparent">
         <Header 
