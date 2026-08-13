@@ -255,7 +255,6 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
                           return (
                             <div
                               key={idx}
-                              onClick={(e) => handleEventoClick(evento as EventoCalendario, e)}
                               className={`text-xs px-2 py-1 rounded-md border truncate transition-opacity flex items-center gap-1.5 ${colores.bg} ${colores.text} ${colores.border} hover:opacity-80`}
                               title={evento.titulo}
                             >
@@ -416,7 +415,7 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
 
       {/* Modal para Crear Evento */}
       <Dialog open={!!creandoEventoEnFecha} onOpenChange={(open) => !open && setCreandoEventoEnFecha(null)}>
-        <DialogContent className="max-w-lg bg-slate-900 border border-white/10 text-white">
+        <DialogContent className="max-w-lg bg-white border-slate-200 text-slate-900 shadow-xl">
           {creandoEventoEnFecha && (
             <CrearEventoDialog 
               fecha={creandoEventoEnFecha}
@@ -428,7 +427,7 @@ const CalendarioModule: React.FC<CalendarioModuleProps> = ({ onVolver }) => {
 
       {/* Modal para Ver Evento */}
       <Dialog open={!!eventoSeleccionado} onOpenChange={(open) => !open && setEventoSeleccionado(null)}>
-        <DialogContent className="max-w-md bg-slate-900 border border-white/10 text-white p-0 overflow-hidden">
+        <DialogContent className="max-w-md bg-white border-slate-200 text-slate-900 p-0 overflow-hidden shadow-2xl">
           {eventoSeleccionado && (
             <VerEventoDialog 
               evento={eventoSeleccionado} 
@@ -467,42 +466,42 @@ const VerEventoDialog: React.FC<{ evento: any; onClose: () => void }> = ({ event
   const tipo = isCumple ? 'Cumpleaños' : evento.tipo;
   
   const getColorClasses = () => {
-    if (isCumple) return 'bg-gradient-to-br from-pink-500/20 to-purple-500/20 border-pink-500/30 text-pink-400';
-    if (evento.prioridad === 'Alta') return 'bg-gradient-to-br from-red-500/20 to-orange-500/20 border-red-500/30 text-red-400';
-    return 'bg-gradient-to-br from-emerald-500/20 to-blue-500/20 border-emerald-500/30 text-emerald-400';
+    if (isCumple) return 'bg-gradient-to-br from-pink-50 to-purple-50 border-pink-100 text-pink-700';
+    if (evento.prioridad === 'Alta') return 'bg-gradient-to-br from-red-50 to-orange-50 border-red-100 text-red-700';
+    return 'bg-gradient-to-br from-emerald-50 to-blue-50 border-emerald-100 text-emerald-700';
   };
   
   const Icono = isCumple ? Gift : (evento.prioridad === 'Alta' ? AlertCircle : Calendar);
 
   return (
     <div className="flex flex-col">
-      <div className={`p-8 border-b border-white/10 flex flex-col items-center text-center ${getColorClasses()} relative overflow-hidden`}>
-        <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-1/4 -translate-y-1/4">
+      <div className={`p-8 border-b border-slate-100 flex flex-col items-center text-center ${getColorClasses()} relative overflow-hidden`}>
+        <div className="absolute top-0 right-0 p-4 opacity-10 transform translate-x-1/4 -translate-y-1/4 text-current">
           <Icono className="w-32 h-32" />
         </div>
-        <div className="w-16 h-16 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center border border-white/20 shadow-xl mb-4 relative z-10">
+        <div className="w-16 h-16 rounded-2xl bg-white shadow-sm flex items-center justify-center border border-slate-200 mb-4 relative z-10">
           <Icono className="w-8 h-8 text-current" />
         </div>
-        <h3 className="font-bold text-2xl text-white relative z-10">{evento.titulo}</h3>
-        <Badge className={`mt-3 bg-black/20 text-current border border-current hover:bg-black/30 relative z-10`}>
+        <h3 className="font-bold text-2xl text-slate-800 relative z-10">{evento.titulo}</h3>
+        <Badge className={`mt-3 bg-white/60 text-current border border-current/20 hover:bg-white/80 relative z-10 shadow-sm`}>
           {tipo} {evento.prioridad === 'Alta' && ' - Urgente'}
         </Badge>
       </div>
       
       <div className="p-6 space-y-6">
         <div className="grid grid-cols-2 gap-4">
-          <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-            <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Fecha</p>
-            <div className="flex items-center gap-2 text-sm font-medium">
-              <Calendar className="w-4 h-4 text-emerald-400" />
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+            <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1 font-bold">Fecha</p>
+            <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+              <Calendar className="w-4 h-4 text-emerald-500" />
               <span>{format(new Date(evento.fecha), 'dd MMM yyyy', { locale: es })}</span>
             </div>
           </div>
           {evento.hora && (
-            <div className="p-3 rounded-xl bg-white/5 border border-white/5">
-              <p className="text-[10px] uppercase tracking-wider text-white/40 mb-1">Hora</p>
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <Clock className="w-4 h-4 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 mb-1 font-bold">Hora</p>
+              <div className="flex items-center gap-2 text-sm font-semibold text-slate-700">
+                <Clock className="w-4 h-4 text-emerald-500" />
                 <span>{formatearHora12(evento.hora)}</span>
               </div>
             </div>
@@ -510,29 +509,29 @@ const VerEventoDialog: React.FC<{ evento: any; onClose: () => void }> = ({ event
         </div>
 
         {evento.ubicacion && (
-          <div className="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0">
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
               <MapPin className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-[10px] uppercase tracking-wider text-white/40">Ubicación</p>
-              <p className="text-sm font-medium text-white">{evento.ubicacion}</p>
+              <p className="text-[10px] uppercase tracking-wider text-slate-400 font-bold">Ubicación</p>
+              <p className="text-sm font-semibold text-slate-700">{evento.ubicacion}</p>
             </div>
           </div>
         )}
 
         {evento.descripcion && (
-          <div className="p-4 rounded-xl bg-black/20 border border-white/5 text-sm text-white/70 leading-relaxed">
+          <div className="p-4 rounded-xl bg-slate-50 border border-slate-100 text-sm text-slate-600 leading-relaxed font-medium">
             {evento.descripcion}
           </div>
         )}
 
-        <div className="pt-4 border-t border-white/10 flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-white/50">
+        <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-400 font-medium">
             <Users className="w-4 h-4" />
-            <span>Por: <strong className="text-white/80">{evento.creadorNombre || 'Sistema (Automático)'}</strong></span>
+            <span>Por: <strong className="text-slate-600">{evento.creadorNombre || 'Sistema (Automático)'}</strong></span>
           </div>
-          <Button variant="ghost" onClick={onClose} className="text-white/60 hover:text-white hover:bg-white/10">
+          <Button variant="ghost" onClick={onClose} className="text-slate-500 hover:text-slate-800 hover:bg-slate-100">
             Cerrar
           </Button>
         </div>
@@ -588,41 +587,41 @@ const CrearEventoDialog: React.FC<{ fecha: Date; onClose: () => void }> = ({ fec
   return (
     <>
       <DialogHeader>
-        <DialogTitle className="flex items-center gap-2 text-xl font-bold">
-          <Plus className="w-5 h-5 text-emerald-400" />
+        <DialogTitle className="flex items-center gap-2 text-xl font-bold text-slate-800">
+          <Plus className="w-5 h-5 text-emerald-500" />
           Programar Evento
         </DialogTitle>
       </DialogHeader>
 
       <form onSubmit={handleSubmit} className="mt-4 space-y-5">
-        <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-3 flex items-center justify-between">
-          <span className="text-sm text-emerald-400 font-medium">Fecha Seleccionada</span>
-          <span className="text-sm text-white font-bold">{format(fecha, 'dd MMM yyyy', { locale: es })}</span>
+        <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-3 flex items-center justify-between">
+          <span className="text-sm text-emerald-600 font-bold">Fecha Seleccionada</span>
+          <span className="text-sm text-slate-700 font-bold">{format(fecha, 'dd MMM yyyy', { locale: es })}</span>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="titulo" className="text-white/70">Título del Evento *</Label>
+          <Label htmlFor="titulo" className="text-slate-600 font-bold">Título del Evento *</Label>
           <Input
             id="titulo"
             value={formData.titulo}
             onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
             placeholder="Ej: Reunión de Consolidación"
             required
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-emerald-500/50"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:ring-emerald-500"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="tipo" className="text-white/70">Tipo de Evento</Label>
+            <Label htmlFor="tipo" className="text-slate-600 font-bold">Tipo de Evento</Label>
             <Select 
               value={formData.tipo} 
               onValueChange={(value) => setFormData({ ...formData, tipo: value as TipoEvento })}
             >
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+              <SelectTrigger className="bg-white border-slate-200 text-slate-900">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-white/10 text-white">
+              <SelectContent className="bg-white border-slate-200 text-slate-900">
                 <SelectItem value="Reunion">Reunión</SelectItem>
                 <SelectItem value="Evento">Evento Especial</SelectItem>
                 <SelectItem value="Actividad">Actividad</SelectItem>
@@ -631,18 +630,18 @@ const CrearEventoDialog: React.FC<{ fecha: Date; onClose: () => void }> = ({ fec
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="prioridad" className="text-white/70">Prioridad</Label>
+            <Label htmlFor="prioridad" className="text-slate-600 font-bold">Prioridad</Label>
             <Select 
               value={formData.prioridad} 
               onValueChange={(value) => setFormData({ ...formData, prioridad: value as PrioridadEvento })}
             >
-              <SelectTrigger className="bg-white/5 border-white/10 text-white">
+              <SelectTrigger className="bg-white border-slate-200 text-slate-900">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 border-white/10 text-white">
-                <SelectItem value="Alta" className="text-red-400">Alta (Urgente)</SelectItem>
-                <SelectItem value="Media" className="text-blue-400">Media</SelectItem>
-                <SelectItem value="Baja" className="text-white/60">Baja</SelectItem>
+              <SelectContent className="bg-white border-slate-200 text-slate-900">
+                <SelectItem value="Alta" className="text-red-600 font-bold">Alta (Urgente)</SelectItem>
+                <SelectItem value="Media" className="text-blue-600 font-medium">Media</SelectItem>
+                <SelectItem value="Baja" className="text-slate-600">Baja</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -650,61 +649,61 @@ const CrearEventoDialog: React.FC<{ fecha: Date; onClose: () => void }> = ({ fec
 
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="hora" className="text-white/70">Hora</Label>
+            <Label htmlFor="hora" className="text-slate-600 font-bold">Hora</Label>
             <Input
               id="hora"
               type="time"
               value={formData.hora}
               onChange={(e) => setFormData({ ...formData, hora: e.target.value })}
-              className="bg-white/5 border-white/10 text-white dark:[color-scheme:dark]"
+              className="bg-white border-slate-200 text-slate-900"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="ubicacion" className="text-white/70">Ubicación (Opcional)</Label>
+            <Label htmlFor="ubicacion" className="text-slate-600 font-bold">Ubicación (Opcional)</Label>
             <Input
               id="ubicacion"
               value={formData.ubicacion}
               onChange={(e) => setFormData({ ...formData, ubicacion: e.target.value })}
               placeholder="Ej: Salón 3"
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30"
+              className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="descripcion" className="text-white/70">Descripción</Label>
+          <Label htmlFor="descripcion" className="text-slate-600 font-bold">Descripción</Label>
           <Textarea
             id="descripcion"
             value={formData.descripcion}
             onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
             placeholder="Detalles, orden del día..."
             rows={3}
-            className="bg-white/5 border-white/10 text-white placeholder:text-white/30 resize-none"
+            className="bg-white border-slate-200 text-slate-900 placeholder:text-slate-400 resize-none"
           />
         </div>
 
         {usuario?.rol === 'pastor_principal' && (
-          <div className="flex items-center space-x-2 bg-white/5 p-3 rounded-lg border border-white/10">
+          <div className="flex items-center space-x-2 bg-slate-50 p-3 rounded-lg border border-slate-200">
             <Checkbox
               id="visibleParaTodos"
               checked={formData.visibleParaTodos}
               onCheckedChange={(checked) => setFormData({ ...formData, visibleParaTodos: checked as boolean })}
-              className="border-white/20 data-[state=checked]:bg-emerald-500"
+              className="border-slate-300 data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500"
             />
-            <Label htmlFor="visibleParaTodos" className="font-medium text-white">
+            <Label htmlFor="visibleParaTodos" className="font-bold text-slate-700 cursor-pointer">
               Hacer visible globalmente
-              <span className="block text-xs text-white/50 font-normal">Todos los roles podrán ver este evento.</span>
+              <span className="block text-xs text-slate-500 font-normal mt-0.5">Todos los roles podrán ver este evento.</span>
             </Label>
           </div>
         )}
 
-        <div className="flex gap-3 pt-4 border-t border-white/10">
-          <Button type="button" variant="ghost" onClick={onClose} className="flex-1 text-white/70 hover:text-white hover:bg-white/10">
+        <div className="flex gap-3 pt-4 border-t border-slate-100">
+          <Button type="button" variant="outline" onClick={onClose} className="flex-1 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50">
             Cancelar
           </Button>
           <Button 
             type="submit" 
-            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+            className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
             disabled={guardando}
           >
             {guardando ? 'Guardando...' : 'Programar Evento'}
